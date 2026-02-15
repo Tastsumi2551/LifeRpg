@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="description" content="Gamifica tu vida - Sistema RPG de progresión personal">
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjoiTGlmZSBSUEciLCJzaG9ydF9uYW1lIjoiTGlmZVJQRyIsInN0YXJ0X3VybCI6Ii4iLCJkaXNwbGF5Ijoic3RhbmRhbG9uZSIsImJhY2tncm91bmRfY29sb3IiOiIjMWExYTJlIiwidGhlbWVfY29sb3IiOiIjZTk0NTYwIiwiaWNvbnMiOlt7InNyYyI6ImRhdGE6aW1hZ2Uvc3ZnK3htbCwlM0NzdmclMjB4bWxucyUzRCdodHRwJTNBJTJGJTJGd3d3LnczLm9yZyUyRjIwMDAlMkZzdmcnJTIwd2lkdGglM0QnMTkyJyUyMGhlaWdodCUzRCcxOTInJTNFJTNDcmVjdCUyMGZpbGwlM0QnJTIzZTk0NTYwJyUyMHdpZHRoJTNEJzE5MiclMjBoZWlnaHQlM0QnMTkyJyUyRiUzRSUzQ3RleHQlMjBmaWxsJTNEJyUyM2ZmZiclMjBmb250LXNpemUlM0QnMTAwJyUyMHglM0QnNTAlMjUnJTIweSUzRCc2NSUyNSclM0UlRjAlOUYlOEUlQUUlM0MlMkZ0ZXh0JTNFJTNDJTJGc3ZnJTNFIiwidHlwZSI6ImltYWdlL3N2Zyt4bWwiLCJzaXplcyI6IjE5MngxOTIifV19">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192'%3E%3Crect fill='%23e94560' width='192' height='192'/%3E%3Ctext fill='%23fff' font-size='100' x='50%25' y='65%25'%3E🎮%3C/text%3E%3C/svg%3E">
+    <title>Life RPG - Tu Vida Como Videojuego</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e4e4e4;
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #0f3460 0%, #16213e 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 2px solid #e94560;
+        }
+
+        h1 {
+            color: #e94560;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
+        }
+
+        .player-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: rgba(15, 52, 96, 0.6);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #e94560;
+        }
+
+        .stat-label {
+            color: #a0a0a0;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            color: #e94560;
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+
+        .section {
+            background: rgba(15, 52, 96, 0.4);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #0f3460;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .section h2 {
+            color: #e94560;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 2px solid #e94560;
+            padding-bottom: 10px;
+        }
+
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .skill-card {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #16213e;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .skill-card:hover {
+            border-color: #e94560;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(233, 69, 96, 0.3);
+        }
+
+        .skill-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .skill-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .skill-level {
+            background: #e94560;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .progress-bar {
+            background: #16213e;
+            height: 25px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 8px;
+            border: 1px solid #0f3460;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #e94560 0%, #ff6b6b 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .xp-text {
+            font-size: 0.85em;
+            color: #a0a0a0;
+            text-align: center;
+        }
+
+        .mission-item {
+            background: rgba(26, 26, 46, 0.6);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            border-left: 4px solid #e94560;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .mission-item:hover {
+            background: rgba(26, 26, 46, 0.9);
+            transform: translateX(5px);
+        }
+
+        .mission-checkbox {
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            accent-color: #e94560;
+        }
+
+        .mission-content {
+            flex: 1;
+        }
+
+        .mission-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        .mission-reward {
+            font-size: 0.85em;
+            color: #e94560;
+        }
+
+        .mission-difficulty {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .difficulty-easy {
+            background: #4ecca3;
+            color: #000;
+        }
+
+        .difficulty-medium {
+            background: #ffa500;
+            color: #000;
+        }
+
+        .difficulty-hard {
+            background: #e94560;
+        }
+
+        .add-mission-btn, .level-up-btn {
+            background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            margin-top: 15px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .add-mission-btn:hover, .level-up-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(233, 69, 96, 0.5);
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .achievement {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #16213e;
+            transition: all 0.3s ease;
+        }
+
+        .achievement.unlocked {
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .achievement.locked {
+            opacity: 0.4;
+            filter: grayscale(1);
+        }
+
+        .achievement-icon {
+            font-size: 2.5em;
+            margin-bottom: 8px;
+        }
+
+        .achievement-name {
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            border: 2px solid #e94560;
+            margin: 20px;
+        }
+
+        .modal h3 {
+            color: #e94560;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #a0a0a0;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #0f3460;
+            background: rgba(15, 52, 96, 0.3);
+            color: #fff;
+            font-size: 1em;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #e94560;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-primary, .btn-secondary {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #0f3460;
+            color: white;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(233, 69, 96, 0.5);
+            z-index: 2000;
+            animation: slideIn 0.5s ease;
+            display: none;
+            max-width: 300px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .stats-section {
+            grid-column: 1 / -1;
+        }
+
+        .radar-chart {
+            background: rgba(15, 52, 96, 0.3);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        canvas {
+            max-width: 100%;
+            height: auto;
+        }
+
+        .mission-completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .delete-mission-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        /* Anti-Dopamine System */
+        .bad-habits-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .habit-card {
+            background: linear-gradient(135deg, #2d1b1b 0%, #1a0f0f 100%);
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #ff4444;
+            transition: all 0.3s ease;
+        }
+
+        .habit-card.clean {
+            border-color: #4ecca3;
+            background: linear-gradient(135deg, #1b2d1f 0%, #0f1a13 100%);
+        }
+
+        .habit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .habit-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .clean-days {
+            background: #4ecca3;
+            color: #000;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .relapse-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .relapse-btn:hover {
+            background: #cc0000;
+        }
+
+        .penalty-text {
+            color: #ff4444;
+            font-size: 0.9em;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        .daily-badge {
+            background: #ffd700;
+            color: #000;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .install-prompt {
+            background: linear-gradient(135deg, #4ecca3 0%, #34d399 100%);
+            color: #000;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .install-prompt button {
+            background: #000;
+            color: #4ecca3;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: rgba(15, 52, 96, 0.6);
+            border: 2px solid #0f3460;
+            border-radius: 8px;
+            color: #e4e4e4;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: #e94560;
+            border-color: #e94560;
+        }
+
+        .mission-type-badge {
+            font-size: 0.75em;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="install-prompt" id="installPrompt">
+            <div style="flex: 1;">
+                <strong>📱 Instala Life RPG como app</strong>
+                <div style="font-size: 0.9em; margin-top: 5px;">Accede más rápido y recibe notificaciones</div>
+            </div>
+            <button onclick="installApp()">Instalar</button>
+            <button onclick="dismissInstall()" style="background: transparent; color: #000;">✕</button>
+        </div>
+
+        <header>
+            <h1>⚔️ LIFE RPG v2.0</h1>
+            <div class="player-info">
+                <div class="stat-card">
+                    <div class="stat-label">Nivel General</div>
+                    <div class="stat-value" id="playerLevel">1</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">XP Total</div>
+                    <div class="stat-value" id="totalXP">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Misiones Completadas</div>
+                    <div class="stat-value" id="missionsCompleted">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Racha Actual</div>
+                    <div class="stat-value" id="currentStreak">0 🔥</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="section">
+                <h2>🎯 Tus Habilidades</h2>
+                <div class="skills-grid" id="skillsGrid"></div>
+            </div>
+
+            <div class="section">
+                <h2>📋 Misiones</h2>
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchMissionTab('all')">Todas</button>
+                    <button class="tab-btn" onclick="switchMissionTab('daily')">Diarias</button>
+                    <button class="tab-btn" onclick="switchMissionTab('normal')">Normales</button>
+                </div>
+                <div id="missionsContainer"></div>
+                <button class="add-mission-btn" onclick="openMissionModal()">+ Agregar Misión</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="section">
+                <h2>🚫 Batalla Anti-Dopamina</h2>
+                <p style="color: #a0a0a0; margin-bottom: 20px; font-size: 0.95em;">
+                    Rompe los hábitos de dopamina barata. Si recaes, pierdes XP pero puedes recuperarte.
+                </p>
+                <div class="bad-habits-grid" id="badHabitsGrid"></div>
+                <button class="add-mission-btn" onclick="openBadHabitModal()">+ Agregar Hábito a Romper</button>
+            </div>
+
+            <div class="section">
+                <h2>🏆 Logros</h2>
+                <div class="achievements-grid" id="achievementsGrid"></div>
+            </div>
+        </div>
+
+        <div class="section stats-section">
+            <h2>📊 Estadísticas Visuales</h2>
+            <div class="radar-chart">
+                <canvas id="radarChart" width="400" height="400"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar misiones -->
+    <div class="modal" id="missionModal">
+        <div class="modal-content">
+            <h3>➕ Nueva Misión</h3>
+            <div class="form-group">
+                <label>Título de la Misión</label>
+                <input type="text" id="missionTitle" placeholder="Ej: Hacer ejercicio 30 minutos">
+            </div>
+            <div class="form-group">
+                <label>Área</label>
+                <select id="missionSkill">
+                    <option value="economico">💰 Económico</option>
+                    <option value="salud">❤️ Salud</option>
+                    <option value="mentalidad">🧠 Mentalidad</option>
+                    <option value="estudios">📚 Estudios</option>
+                    <option value="alimentacion">🍎 Alimentación</option>
+                    <option value="aprendizaje">🎓 Aprendizaje</option>
+                    <option value="carisma">✨ Carisma</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Dificultad</label>
+                <select id="missionDifficulty">
+                    <option value="easy">Fácil (+10 XP)</option>
+                    <option value="medium">Media (+25 XP)</option>
+                    <option value="hard">Difícil (+50 XP)</option>
+                </select>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="isDailyMission">
+                <label for="isDailyMission" style="cursor: pointer; color: #ffd700;">
+                    ⭐ Misión Diaria (se reinicia cada día)
+                </label>
+            </div>
+            <div class="button-group">
+                <button class="btn-secondary" onclick="closeMissionModal()">Cancelar</button>
+                <button class="btn-primary" onclick="addMission()">Crear Misión</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para agregar hábitos malos -->
+    <div class="modal" id="badHabitModal">
+        <div class="modal-content">
+            <h3>🚫 Nuevo Hábito a Romper</h3>
+            <div class="form-group">
+                <label>Nombre del Hábito</label>
+                <input type="text" id="badHabitName" placeholder="Ej: Masturbación, Scrolling, Procrastinación">
+            </div>
+            <div class="form-group">
+                <label>Penalización (XP a perder si recaes)</label>
+                <select id="badHabitPenalty">
+                    <option value="50">-50 XP (Leve)</option>
+                    <option value="100">-100 XP (Moderada)</option>
+                    <option value="200">-200 XP (Severa)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Área más afectada</label>
+                <select id="badHabitSkill">
+                    <option value="mentalidad">🧠 Mentalidad</option>
+                    <option value="salud">❤️ Salud</option>
+                    <option value="economico">💰 Económico</option>
+                    <option value="estudios">📚 Estudios</option>
+                    <option value="alimentacion">🍎 Alimentación</option>
+                    <option value="aprendizaje">🎓 Aprendizaje</option>
+                    <option value="carisma">✨ Carisma</option>
+                </select>
+            </div>
+            <div class="button-group">
+                <button class="btn-secondary" onclick="closeBadHabitModal()">Cancelar</button>
+                <button class="btn-primary" onclick="addBadHabit()">Agregar Hábito</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('data:text/javascript;base64,c2VsZi5hZGRFdmVudExpc3RlbmVyKCdpbnN0YWxsJywgZnVuY3Rpb24oZSkge30pOw==');
+        }
+
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('installPrompt').style.display = 'flex';
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        showNotification('📱 ¡App instalada con éxito!');
+                    }
+                    deferredPrompt = null;
+                    document.getElementById('installPrompt').style.display = 'none';
+                });
+            }
+        }
+
+        function dismissInstall() {
+            document.getElementById('installPrompt').style.display = 'none';
+        }
+
+        // Configuración inicial
+        const SKILLS = {
+            economico: { name: '💰 Económico', level: 1, xp: 0, color: '#4ecca3' },
+            salud: { name: '❤️ Salud', level: 1, xp: 0, color: '#e94560' },
+            mentalidad: { name: '🧠 Mentalidad', level: 1, xp: 0, color: '#a78bfa' },
+            estudios: { name: '📚 Estudios', level: 1, xp: 0, color: '#60a5fa' },
+            alimentacion: { name: '🍎 Alimentación', level: 1, xp: 0, color: '#34d399' },
+            aprendizaje: { name: '🎓 Aprendizaje', level: 1, xp: 0, color: '#fbbf24' },
+            carisma: { name: '✨ Carisma', level: 1, xp: 0, color: '#f472b6' }
+        };
+
+        const ACHIEVEMENTS = [
+            { id: 'first_mission', name: 'Primera Misión', icon: '🎯', condition: (data) => data.missionsCompleted >= 1 },
+            { id: 'streak_7', name: 'Semana Épica', icon: '🔥', condition: (data) => data.currentStreak >= 7 },
+            { id: 'level_5', name: 'Nivel 5', icon: '⭐', condition: (data) => data.playerLevel >= 5 },
+            { id: 'clean_30', name: 'Mes Limpio', icon: '💎', condition: (data) => data.badHabits.some(h => h.cleanDays >= 30) },
+            { id: 'missions_10', name: '10 Misiones', icon: '💪', condition: (data) => data.missionsCompleted >= 10 },
+            { id: 'all_skills_3', name: 'Polímata', icon: '🌟', condition: (data) => Object.values(data.skills).every(s => s.level >= 3) },
+            { id: 'missions_50', name: 'Héroe', icon: '🦸', condition: (data) => data.missionsCompleted >= 50 },
+            { id: 'level_10', name: 'Maestro', icon: '👑', condition: (data) => data.playerLevel >= 10 }
+        ];
+
+        const XP_REWARDS = {
+            easy: 10,
+            medium: 25,
+            hard: 50
+        };
+
+        let currentMissionFilter = 'all';
+
+        // Cargar datos del almacenamiento
+        async function loadData() {
+            try {
+                // Intentar usar window.storage primero (para sincronización en línea)
+                if (window.storage) {
+                    const data = await window.storage.get('liferpg-data-v2');
+                    if (data && data.value) {
+                        return JSON.parse(data.value);
+                    }
+                }
+            } catch (e) {
+                console.log('Window storage no disponible, usando localStorage');
+            }
+            
+            // Fallback a localStorage
+            try {
+                const localData = localStorage.getItem('liferpg-data-v2');
+                if (localData) {
+                    return JSON.parse(localData);
+                }
+            } catch (e) {
+                console.log('No hay datos previos, iniciando nuevo juego');
+            }
+            
+            return {
+                skills: JSON.parse(JSON.stringify(SKILLS)),
+                missions: [],
+                badHabits: [],
+                playerLevel: 1,
+                totalXP: 0,
+                missionsCompleted: 0,
+                currentStreak: 0,
+                lastActiveDate: new Date().toDateString(),
+                lastDailyReset: new Date().toDateString(),
+                unlockedAchievements: []
+            };
+        }
+
+        // Guardar datos
+        async function saveData(data) {
+            try {
+                // Intentar guardar en window.storage (sincronización)
+                if (window.storage) {
+                    await window.storage.set('liferpg-data-v2', JSON.stringify(data));
+                }
+            } catch (e) {
+                console.log('Window storage no disponible');
+            }
+            
+            // Siempre guardar en localStorage como backup
+            try {
+                localStorage.setItem('liferpg-data-v2', JSON.stringify(data));
+            } catch (e) {
+                console.error('Error guardando datos:', e);
+            }
+        }
+
+        let gameData = null;
+
+        // Inicializar juego
+        async function initGame() {
+            gameData = await loadData();
+            updateStreak();
+            resetDailyMissions();
+            renderSkills();
+            renderMissions();
+            renderBadHabits();
+            renderAchievements();
+            updatePlayerStats();
+            drawRadarChart();
+        }
+
+        // Resetear misiones diarias
+        function resetDailyMissions() {
+            const today = new Date().toDateString();
+            if (gameData.lastDailyReset !== today) {
+                gameData.missions.forEach(mission => {
+                    if (mission.isDaily) {
+                        mission.completed = false;
+                    }
+                });
+                gameData.lastDailyReset = today;
+                saveData(gameData);
+            }
+        }
+
+        // Actualizar racha
+        function updateStreak() {
+            const today = new Date().toDateString();
+            const yesterday = new Date(Date.now() - 86400000).toDateString();
+            
+            if (gameData.lastActiveDate === yesterday) {
+                // Continúa la racha si fue ayer
+            } else if (gameData.lastActiveDate !== today) {
+                // Se rompió la racha
+                gameData.currentStreak = 0;
+            }
+            
+            gameData.lastActiveDate = today;
+        }
+
+        // Renderizar habilidades
+        function renderSkills() {
+            const container = document.getElementById('skillsGrid');
+            container.innerHTML = '';
+            
+            Object.entries(gameData.skills).forEach(([key, skill]) => {
+                const xpForNext = skill.level * 100;
+                const progress = (skill.xp / xpForNext) * 100;
+                
+                const card = document.createElement('div');
+                card.className = 'skill-card';
+                card.innerHTML = `
+                    <div class="skill-header">
+                        <div class="skill-name">${skill.name}</div>
+                        <div class="skill-level">Nv. ${skill.level}</div>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${progress}%">
+                            ${Math.round(progress)}%
+                        </div>
+                    </div>
+                    <div class="xp-text">${skill.xp} / ${xpForNext} XP</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Switch mission tabs
+        function switchMissionTab(filter) {
+            currentMissionFilter = filter;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderMissions();
+        }
+
+        // Renderizar misiones
+        function renderMissions() {
+            const container = document.getElementById('missionsContainer');
+            container.innerHTML = '';
+            
+            let filteredMissions = gameData.missions;
+            if (currentMissionFilter === 'daily') {
+                filteredMissions = gameData.missions.filter(m => m.isDaily);
+            } else if (currentMissionFilter === 'normal') {
+                filteredMissions = gameData.missions.filter(m => !m.isDaily);
+            }
+            
+            if (filteredMissions.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #a0a0a0; padding: 20px;">No tienes misiones en esta categoría.</p>';
+                return;
+            }
+            
+            filteredMissions.forEach((mission, originalIndex) => {
+                const index = gameData.missions.indexOf(mission);
+                const item = document.createElement('div');
+                item.className = `mission-item ${mission.completed ? 'mission-completed' : ''}`;
+                item.innerHTML = `
+                    <input type="checkbox" class="mission-checkbox" 
+                           ${mission.completed ? 'checked' : ''} 
+                           onchange="toggleMission(${index})">
+                    <div class="mission-content">
+                        <div class="mission-title">
+                            ${mission.title}
+                            ${mission.isDaily ? '<span class="daily-badge">DIARIA</span>' : ''}
+                        </div>
+                        <div class="mission-reward">+${mission.xpReward} XP en ${gameData.skills[mission.skill].name}</div>
+                    </div>
+                    <span class="mission-difficulty difficulty-${mission.difficulty}">
+                        ${mission.difficulty === 'easy' ? 'Fácil' : mission.difficulty === 'medium' ? 'Media' : 'Difícil'}
+                    </span>
+                    <button class="delete-mission-btn" onclick="deleteMission(${index})">🗑️</button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Renderizar hábitos malos
+        function renderBadHabits() {
+            const container = document.getElementById('badHabitsGrid');
+            container.innerHTML = '';
+            
+            if (gameData.badHabits.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #a0a0a0; padding: 20px;">No has agregado hábitos a romper.</p>';
+                return;
+            }
+            
+            gameData.badHabits.forEach((habit, index) => {
+                const card = document.createElement('div');
+                card.className = `habit-card ${habit.cleanDays >= 7 ? 'clean' : ''}`;
+                card.innerHTML = `
+                    <div class="habit-header">
+                        <div class="habit-name">🚫 ${habit.name}</div>
+                        <div class="clean-days">${habit.cleanDays} días limpio</div>
+                    </div>
+                    <div style="color: #a0a0a0; font-size: 0.9em; margin-bottom: 10px;">
+                        Afecta: ${gameData.skills[habit.affectedSkill].name}
+                    </div>
+                    <button class="relapse-btn" onclick="reportRelapse(${index})">
+                        Reportar Recaída
+                    </button>
+                    <div class="penalty-text">Penalización: -${habit.penalty} XP</div>
+                    <button class="delete-mission-btn" style="margin-top: 10px;" onclick="deleteBadHabit(${index})">🗑️ Eliminar</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Reportar recaída
+        async function reportRelapse(index) {
+            if (!confirm('¿Seguro que quieres reportar una recaída? Perderás XP.')) {
+                return;
+            }
+
+            const habit = gameData.badHabits[index];
+            const skill = gameData.skills[habit.affectedSkill];
+            
+            // Aplicar penalización
+            skill.xp = Math.max(0, skill.xp - habit.penalty);
+            gameData.totalXP = Math.max(0, gameData.totalXP - habit.penalty);
+            
+            // Resetear días limpios
+            habit.cleanDays = 0;
+            
+            showNotification(`💔 Recaída reportada. -${habit.penalty} XP de ${skill.name}`);
+            
+            await saveData(gameData);
+            renderSkills();
+            renderBadHabits();
+            drawRadarChart();
+        }
+
+        // Renderizar logros
+        function renderAchievements() {
+            const container = document.getElementById('achievementsGrid');
+            container.innerHTML = '';
+            
+            ACHIEVEMENTS.forEach(achievement => {
+                const unlocked = gameData.unlockedAchievements.includes(achievement.id) || achievement.condition(gameData);
+                
+                if (unlocked && !gameData.unlockedAchievements.includes(achievement.id)) {
+                    gameData.unlockedAchievements.push(achievement.id);
+                    showNotification(`🎉 ¡Logro Desbloqueado: ${achievement.name}!`);
+                }
+                
+                const div = document.createElement('div');
+                div.className = `achievement ${unlocked ? 'unlocked' : 'locked'}`;
+                div.innerHTML = `
+                    <div class="achievement-icon">${achievement.icon}</div>
+                    <div class="achievement-name">${achievement.name}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // Actualizar estadísticas del jugador
+        function updatePlayerStats() {
+            const avgLevel = Math.floor(Object.values(gameData.skills).reduce((sum, s) => sum + s.level, 0) / 7);
+            gameData.playerLevel = Math.max(1, avgLevel);
+            
+            document.getElementById('playerLevel').textContent = gameData.playerLevel;
+            document.getElementById('totalXP').textContent = gameData.totalXP;
+            document.getElementById('missionsCompleted').textContent = gameData.missionsCompleted;
+            document.getElementById('currentStreak').textContent = `${gameData.currentStreak} 🔥`;
+        }
+
+        // Toggle misión completada
+        async function toggleMission(index) {
+            const mission = gameData.missions[index];
+            
+            if (!mission.completed) {
+                mission.completed = true;
+                
+                // Agregar XP
+                const skill = gameData.skills[mission.skill];
+                skill.xp += mission.xpReward;
+                gameData.totalXP += mission.xpReward;
+                gameData.missionsCompleted++;
+                gameData.currentStreak++;
+                
+                // Incrementar días limpios de hábitos
+                gameData.badHabits.forEach(habit => {
+                    habit.cleanDays++;
+                });
+                
+                // Verificar subida de nivel
+                const xpForNext = skill.level * 100;
+                if (skill.xp >= xpForNext) {
+                    skill.xp -= xpForNext;
+                    skill.level++;
+                    showNotification(`🎊 ¡${skill.name} subió a nivel ${skill.level}!`);
+                }
+                
+                showNotification(`✅ ¡Misión completada! +${mission.xpReward} XP`);
+            } else {
+                mission.completed = false;
+            }
+            
+            await saveData(gameData);
+            renderSkills();
+            renderMissions();
+            renderBadHabits();
+            renderAchievements();
+            updatePlayerStats();
+            drawRadarChart();
+        }
+
+        // Eliminar misión
+        async function deleteMission(index) {
+            if (confirm('¿Seguro que quieres eliminar esta misión?')) {
+                gameData.missions.splice(index, 1);
+                await saveData(gameData);
+                renderMissions();
+            }
+        }
+
+        // Eliminar hábito malo
+        async function deleteBadHabit(index) {
+            if (confirm('¿Seguro que quieres eliminar este hábito?')) {
+                gameData.badHabits.splice(index, 1);
+                await saveData(gameData);
+                renderBadHabits();
+            }
+        }
+
+        // Modal de misiones
+        function openMissionModal() {
+            document.getElementById('missionModal').style.display = 'flex';
+        }
+
+        function closeMissionModal() {
+            document.getElementById('missionModal').style.display = 'none';
+            document.getElementById('missionTitle').value = '';
+            document.getElementById('isDailyMission').checked = false;
+        }
+
+        // Modal de hábitos malos
+        function openBadHabitModal() {
+            document.getElementById('badHabitModal').style.display = 'flex';
+        }
+
+        function closeBadHabitModal() {
+            document.getElementById('badHabitModal').style.display = 'none';
+            document.getElementById('badHabitName').value = '';
+        }
+
+        // Agregar misión
+        async function addMission() {
+            const title = document.getElementById('missionTitle').value.trim();
+            const skill = document.getElementById('missionSkill').value;
+            const difficulty = document.getElementById('missionDifficulty').value;
+            const isDaily = document.getElementById('isDailyMission').checked;
+            
+            if (!title) {
+                alert('Por favor ingresa un título para la misión');
+                return;
+            }
+            
+            const mission = {
+                title,
+                skill,
+                difficulty,
+                xpReward: XP_REWARDS[difficulty],
+                completed: false,
+                isDaily: isDaily,
+                createdAt: Date.now()
+            };
+            
+            gameData.missions.push(mission);
+            await saveData(gameData);
+            
+            closeMissionModal();
+            renderMissions();
+            showNotification(isDaily ? '⭐ ¡Nueva misión diaria creada!' : '✨ ¡Nueva misión creada!');
+        }
+
+        // Agregar hábito malo
+        async function addBadHabit() {
+            const name = document.getElementById('badHabitName').value.trim();
+            const penalty = parseInt(document.getElementById('badHabitPenalty').value);
+            const affectedSkill = document.getElementById('badHabitSkill').value;
+            
+            if (!name) {
+                alert('Por favor ingresa un nombre para el hábito');
+                return;
+            }
+            
+            const habit = {
+                name,
+                penalty,
+                affectedSkill,
+                cleanDays: 0,
+                createdAt: Date.now()
+            };
+            
+            gameData.badHabits.push(habit);
+            await saveData(gameData);
+            
+            closeBadHabitModal();
+            renderBadHabits();
+            showNotification('🚫 ¡Hábito agregado! Ahora empieza tu batalla.');
+        }
+
+        // Mostrar notificación
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+
+        // Dibujar gráfico radar
+        function drawRadarChart() {
+            const canvas = document.getElementById('radarChart');
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 150;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const skills = Object.values(gameData.skills);
+            const angles = skills.map((_, i) => (i * 2 * Math.PI) / skills.length - Math.PI / 2);
+            
+            // Dibujar círculos de fondo
+            ctx.strokeStyle = '#0f3460';
+            ctx.lineWidth = 1;
+            for (let i = 1; i <= 5; i++) {
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, (radius / 5) * i, 0, 2 * Math.PI);
+                ctx.stroke();
+            }
+            
+            // Dibujar líneas radiales
+            angles.forEach((angle, i) => {
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+                
+                // Etiquetas
+                ctx.fillStyle = '#e4e4e4';
+                ctx.font = '14px Arial';
+                ctx.textAlign = 'center';
+                const labelX = centerX + (radius + 30) * Math.cos(angle);
+                const labelY = centerY + (radius + 30) * Math.sin(angle);
+                ctx.fillText(skills[i].name, labelX, labelY);
+            });
+            
+            // Dibujar polígono de habilidades
+            ctx.beginPath();
+            ctx.strokeStyle = '#e94560';
+            ctx.fillStyle = 'rgba(233, 69, 96, 0.3)';
+            ctx.lineWidth = 3;
+            
+            angles.forEach((angle, i) => {
+                const skillLevel = skills[i].level;
+                const r = (radius / 10) * skillLevel;
+                const x = centerX + r * Math.cos(angle);
+                const y = centerY + r * Math.sin(angle);
+                
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Puntos en los vértices
+            angles.forEach((angle, i) => {
+                const skillLevel = skills[i].level;
+                const r = (radius / 10) * skillLevel;
+                const x = centerX + r * Math.cos(angle);
+                const y = centerY + r * Math.sin(angle);
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 6, 0, 2 * Math.PI);
+                ctx.fillStyle = '#e94560';
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+        }
+
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            const missionModal = document.getElementById('missionModal');
+            const habitModal = document.getElementById('badHabitModal');
+            if (event.target === missionModal) {
+                closeMissionModal();
+            }
+            if (event.target === habitModal) {
+                closeBadHabitModal();
+            }
+        }
+
+        // Iniciar el juego cuando cargue la página
+        initGame();
+    </script>
+</body>
+</html>
