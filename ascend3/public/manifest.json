@@ -1,0 +1,18 @@
+{
+  "name": "Ascend — Level Up Your Life",
+  "short_name": "Ascend",
+  "description": "Gamifica tu vida. Misiones, gym, nutrición, todo en un RPG.",
+  "theme_color": "#060612",
+  "background_color": "#060612",
+  "display": "standalone",
+  "start_url": "/",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
