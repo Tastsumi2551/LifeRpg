@@ -25,26 +25,22 @@ function Heatmap({ activityLog }) {
     <div>
       <div className="heatmap">
         {cells.map((c) => (
-          <div
-            key={c.key}
-            className={`heatmap-cell ${c.level}`}
-            title={`${c.date}: ${c.count} actividades`}
-          />
+          <div key={c.key} className={`heatmap-cell ${c.level}`} title={`${c.date}: ${c.count}`} />
         ))}
       </div>
       <div style={{
         display: 'flex', justifyContent: 'space-between',
-        marginTop: 8, fontSize: '0.7rem', color: 'var(--text-dim)',
+        marginTop: 8, fontSize: '0.68rem', color: 'var(--text-disabled)',
       }}>
-        <span>90 días atrás</span>
-        <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
+        <span>90 dias</span>
+        <div style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
           <span>Menos</span>
-          <div className="heatmap-cell" style={{ width: 10, height: 10 }} />
-          <div className="heatmap-cell l1" style={{ width: 10, height: 10 }} />
-          <div className="heatmap-cell l2" style={{ width: 10, height: 10 }} />
-          <div className="heatmap-cell l3" style={{ width: 10, height: 10 }} />
-          <div className="heatmap-cell l4" style={{ width: 10, height: 10 }} />
-          <span>Más</span>
+          <div className="heatmap-cell" style={{ width: 9, height: 9 }} />
+          <div className="heatmap-cell l1" style={{ width: 9, height: 9 }} />
+          <div className="heatmap-cell l2" style={{ width: 9, height: 9 }} />
+          <div className="heatmap-cell l3" style={{ width: 9, height: 9 }} />
+          <div className="heatmap-cell l4" style={{ width: 9, height: 9 }} />
+          <span>Mas</span>
         </div>
       </div>
     </div>
@@ -70,8 +66,8 @@ export default function Home() {
         <p>Tu progreso de hoy</p>
       </div>
 
-      {/* Stat Cards */}
-      <div className="grid-stats" style={{ marginBottom: 24 }}>
+      {/* Stats */}
+      <div className="grid-stats" style={{ marginBottom: 20 }}>
         <div className="stat-card">
           <div className="stat-value">{playerLevel}</div>
           <div className="stat-label">Nivel</div>
@@ -85,52 +81,55 @@ export default function Home() {
           <div className="stat-label">Monedas</div>
         </div>
         <div className="stat-card">
-          <div className="stat-value">{streak}<span style={{ fontSize: '0.9rem' }}>🔥</span></div>
+          <div className="stat-value">{streak}<span style={{ fontSize: '0.7rem', marginLeft: 2 }}>dias</span></div>
           <div className="stat-label">Racha</div>
         </div>
       </div>
 
-      {/* Activity Heatmap */}
-      <div className="section-title"><span className="icon">📊</span> Actividad (90 días)</div>
+      {/* Heatmap */}
+      <div className="section-title">Actividad</div>
       <div className="card" style={{ marginBottom: 24 }}>
         <Heatmap activityLog={activityLog} />
       </div>
 
       {/* Skills */}
-      <div className="section-title"><span className="icon">🎯</span> Tus Habilidades</div>
-      <div className="grid-skills" style={{ marginBottom: 28 }}>
+      <div className="section-title">Habilidades</div>
+      <div className="grid-skills" style={{ marginBottom: 24 }}>
         {Object.entries(skills).map(([key, skill]) => {
           const xpNeeded = skill.level * 100;
           const pct = Math.min((skill.xp / xpNeeded) * 100, 100);
           return (
-            <div key={key} className="card">
+            <div key={key} className="card" style={{ padding: '14px 16px' }}>
               <div style={{
                 display: 'flex', justifyContent: 'space-between',
-                alignItems: 'center', marginBottom: 10,
+                alignItems: 'center', marginBottom: 8,
               }}>
-                <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>
-                  {skill.icon} {skill.name}
-                </span>
-                <span className="level-badge" style={{ background: skill.color }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: '0.9rem' }}>{skill.icon}</span>
+                  <span style={{ fontWeight: 600, fontSize: '0.88rem', color: 'var(--text-primary)' }}>
+                    {skill.name}
+                  </span>
+                </div>
+                <span className="level-badge" style={{ background: skill.color, opacity: 0.9 }}>
                   Nv. {skill.level}
                 </span>
               </div>
-              <div className="progress-bar">
+              <div className="progress-bar labeled">
                 <div
                   className="progress-fill"
                   style={{
-                    width: `${Math.max(pct, 6)}%`,
-                    background: `linear-gradient(90deg, ${skill.color}, ${skill.color}cc)`,
+                    width: `${Math.max(pct, 8)}%`,
+                    background: skill.color,
                   }}
                 >
                   {Math.round(pct)}%
                 </div>
               </div>
               <div style={{
-                fontSize: '0.73rem', color: 'var(--text-dim)',
-                textAlign: 'center', marginTop: 5,
+                fontSize: '0.7rem', color: 'var(--text-disabled)',
+                textAlign: 'right', marginTop: 4,
               }}>
-                {skill.xp} / {xpNeeded} XP
+                {skill.xp}/{xpNeeded} XP
               </div>
             </div>
           );
@@ -138,50 +137,50 @@ export default function Home() {
       </div>
 
       {/* Quick Actions */}
-      <div className="section-title"><span className="icon">⚡</span> Acceso Rápido</div>
+      <div className="section-title">Acceso rapido</div>
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-        gap: 10, marginBottom: 28,
+        gap: 8, marginBottom: 24,
       }}>
         {[
-          { icon: '🎯', label: 'Misiones', sub: `${pendingMissions} pendientes`, path: '/missions' },
-          { icon: '📅', label: 'Horario', sub: 'Ver semana', path: '/schedule' },
-          { icon: '⚔️', label: 'Arsenal', sub: `${badHabits.length} batallas`, path: '/arsenal' },
-          { icon: '💰', label: 'Finanzas', sub: 'Tracker', path: '/finance' },
+          { label: 'Misiones', sub: `${pendingMissions} pendientes`, path: '/missions' },
+          { label: 'Horario', sub: 'Ver semana', path: '/schedule' },
+          { label: 'Arsenal', sub: `Pomodoro + Batalla`, path: '/arsenal' },
+          { label: 'Finanzas', sub: 'Tracker', path: '/finance' },
         ].map((item) => (
           <div
             key={item.path}
             className="card card-interactive"
             onClick={() => navigate(item.path)}
-            style={{ textAlign: 'center', padding: 16, cursor: 'pointer' }}
+            style={{ textAlign: 'center', padding: 14, cursor: 'pointer' }}
           >
-            <div style={{ fontSize: '1.6rem', marginBottom: 6 }}>{item.icon}</div>
-            <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: 2 }}>{item.label}</div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{item.sub}</div>
+            <div style={{ fontWeight: 600, fontSize: '0.85rem', marginBottom: 2, color: 'var(--text-primary)' }}>
+              {item.label}
+            </div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)' }}>{item.sub}</div>
           </div>
         ))}
       </div>
 
       {/* Summary */}
-      <div className="section-title"><span className="icon">📋</span> Resumen</div>
-      <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
-          <span style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>Misiones pendientes</span>
-          <span style={{ fontWeight: 700, color: 'var(--accent)', fontSize: '0.88rem' }}>{pendingMissions}</span>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
-          <span style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>Completadas hoy</span>
-          <span style={{ fontWeight: 700, color: 'var(--green)', fontSize: '0.88rem' }}>{completedToday}</span>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
-          <span style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>Total misiones completadas</span>
-          <span style={{ fontWeight: 700, fontSize: '0.88rem' }}>{missionsCompleted}</span>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0' }}>
-          <span style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>Sesiones Pomodoro</span>
-          <span style={{ fontWeight: 700, color: 'var(--purple)', fontSize: '0.88rem' }}>{pomodoroSessions}</span>
-        </div>
+      <div className="section-title">Resumen</div>
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        {[
+          { label: 'Misiones pendientes', value: pendingMissions, color: 'var(--accent)' },
+          { label: 'Completadas hoy', value: completedToday, color: 'var(--success)' },
+          { label: 'Total completadas', value: missionsCompleted, color: 'var(--text-primary)' },
+          { label: 'Sesiones Pomodoro', value: pomodoroSessions, color: 'var(--purple)' },
+        ].map((item, i, arr) => (
+          <div key={item.label} style={{
+            display: 'flex', justifyContent: 'space-between',
+            padding: '10px 16px',
+            borderBottom: i < arr.length - 1 ? '1px solid var(--border-subtle)' : 'none',
+          }}>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>{item.label}</span>
+            <span style={{ fontWeight: 700, color: item.color, fontSize: '0.85rem' }}>{item.value}</span>
+          </div>
+        ))}
       </div>
     </div>
   );

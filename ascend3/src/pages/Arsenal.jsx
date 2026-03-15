@@ -1,10 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useGameStore, SKILL_OPTIONS, POMODORO_XP } from '../stores/gameStore';
 
-// ══════════════════════════════════════════════════════
-// POMODORO TIMER
-// ══════════════════════════════════════════════════════
-
 function PomodoroTimer() {
   const { completePomodoroSession, pomodoroSessions, pomodoroTotalMinutes } = useGameStore();
 
@@ -26,33 +22,21 @@ function PomodoroTimer() {
   };
 
   const start = () => {
-    if (isComplete) {
-      setTimeLeft(duration * 60);
-      setIsComplete(false);
-    }
+    if (isComplete) { setTimeLeft(duration * 60); setIsComplete(false); }
     setIsRunning(true);
   };
-
   const pause = () => setIsRunning(false);
-
-  const reset = () => {
-    setIsRunning(false);
-    setIsComplete(false);
-    setTimeLeft(duration * 60);
-  };
+  const reset = () => { setIsRunning(false); setIsComplete(false); setTimeLeft(duration * 60); };
 
   const changeDuration = (mins) => {
     if (isRunning) return;
-    setDuration(mins);
-    setTimeLeft(mins * 60);
-    setIsComplete(false);
+    setDuration(mins); setTimeLeft(mins * 60); setIsComplete(false);
   };
 
   const tick = useCallback(() => {
     setTimeLeft((prev) => {
       if (prev <= 1) {
-        setIsRunning(false);
-        setIsComplete(true);
+        setIsRunning(false); setIsComplete(true);
         completePomodoroSession(duration, skill);
         return 0;
       }
@@ -61,82 +45,55 @@ function PomodoroTimer() {
   }, [completePomodoroSession, duration, skill]);
 
   useEffect(() => {
-    if (isRunning) {
-      intervalRef.current = setInterval(tick, 1000);
-    }
+    if (isRunning) intervalRef.current = setInterval(tick, 1000);
     return () => clearInterval(intervalRef.current);
   }, [isRunning, tick]);
 
   return (
     <div>
-      {/* Duration selector */}
-      <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 20 }}>
+      <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginBottom: 20 }}>
         {[25, 45, 60].map((m) => (
-          <button
-            key={m}
-            className={`tab-btn ${duration === m ? 'active' : ''}`}
-            onClick={() => changeDuration(m)}
-            style={{ minWidth: 60 }}
-          >
-            {m} min
-          </button>
+          <button key={m} className={`tab-btn ${duration === m ? 'active' : ''}`}
+            onClick={() => changeDuration(m)} style={{ minWidth: 56 }}>{m} min</button>
         ))}
       </div>
 
-      {/* Skill selector */}
-      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 24 }}>
-        <select
-          className="form-input"
-          value={skill}
-          onChange={(e) => setSkill(e.target.value)}
-          style={{ width: 'auto', padding: '6px 30px 6px 10px', fontSize: '0.82rem' }}
-          disabled={isRunning}
-        >
-          {SKILL_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
+      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+        <select className="form-input" value={skill} onChange={(e) => setSkill(e.target.value)}
+          style={{ width: 'auto', padding: '6px 28px 6px 10px', fontSize: '0.82rem' }} disabled={isRunning}>
+          {SKILL_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
         </select>
       </div>
 
-      {/* Timer Ring */}
-      <div className="pomodoro-ring" style={{ marginBottom: 24 }}>
+      <div className="pomodoro-ring" style={{ marginBottom: 20 }}>
         <svg viewBox="0 0 200 200">
           <circle className="track" cx="100" cy="100" r="95" />
-          <circle
-            className="progress"
-            cx="100" cy="100" r="95"
+          <circle className="progress" cx="100" cy="100" r="95"
             strokeDasharray={circumference}
             strokeDashoffset={circumference * (1 - progress)}
-            style={{ stroke: isComplete ? 'var(--green)' : 'var(--accent)' }}
-          />
+            style={{ stroke: isComplete ? 'var(--success)' : 'var(--accent)' }} />
         </svg>
         <div className="pomodoro-center">
           <div className="pomodoro-time">{formatTime(timeLeft)}</div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 4 }}>
-            +{POMODORO_XP[duration] || 15} XP · +{Math.floor(duration / 5)} 🪙
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', marginTop: 4 }}>
+            +{POMODORO_XP[duration] || 15} XP · +{Math.floor(duration / 5)} monedas
           </div>
         </div>
       </div>
 
-      {/* Controls */}
-      <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginBottom: 24 }}>
+      <div style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 20 }}>
         {!isRunning ? (
-          <button className="btn-primary" onClick={start} style={{ width: 'auto', minWidth: 120 }}>
+          <button className="btn-primary" onClick={start} style={{ width: 'auto', minWidth: 110 }}>
             {isComplete ? 'Otra vez' : timeLeft < totalSeconds ? 'Continuar' : 'Iniciar'}
           </button>
         ) : (
-          <button className="btn-secondary" onClick={pause} style={{ minWidth: 120 }}>
-            Pausar
-          </button>
+          <button className="btn-secondary" onClick={pause} style={{ minWidth: 110 }}>Pausar</button>
         )}
         {(isRunning || timeLeft < totalSeconds) && (
-          <button className="btn-ghost" onClick={reset} style={{ fontSize: '0.85rem' }}>
-            Reiniciar
-          </button>
+          <button className="btn-ghost" onClick={reset} style={{ fontSize: '0.82rem' }}>Reiniciar</button>
         )}
       </div>
 
-      {/* Stats */}
       <div className="grid-stats" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
         <div className="stat-card">
           <div className="stat-value" style={{ color: 'var(--purple)' }}>{pomodoroSessions}</div>
@@ -146,8 +103,7 @@ function PomodoroTimer() {
           <div className="stat-value" style={{ color: 'var(--purple)' }}>
             {pomodoroTotalMinutes >= 60
               ? `${Math.floor(pomodoroTotalMinutes / 60)}h ${pomodoroTotalMinutes % 60}m`
-              : `${pomodoroTotalMinutes}m`
-            }
+              : `${pomodoroTotalMinutes}m`}
           </div>
           <div className="stat-label">Tiempo total</div>
         </div>
@@ -156,15 +112,9 @@ function PomodoroTimer() {
   );
 }
 
-// ══════════════════════════════════════════════════════
-// BATTLE (Bad Habits)
-// ══════════════════════════════════════════════════════
-
 function Battle() {
   const { badHabits, skills, addBadHabit, reportRelapse, deleteBadHabit } = useGameStore();
   const [showModal, setShowModal] = useState(false);
-
-  // Form
   const [habitName, setHabitName] = useState('');
   const [penalty, setPenalty] = useState(100);
   const [affectedSkill, setAffectedSkill] = useState('mentalidad');
@@ -172,23 +122,7 @@ function Battle() {
   const handleAdd = () => {
     if (!habitName.trim()) return;
     addBadHabit({ name: habitName.trim(), penalty, affectedSkill });
-    setHabitName('');
-    setPenalty(100);
-    setAffectedSkill('mentalidad');
-    setShowModal(false);
-  };
-
-  const handleRelapse = (i) => {
-    const habit = badHabits[i];
-    if (window.confirm(`Reportar recaida? Perderas ${habit.penalty} XP.`)) {
-      reportRelapse(i);
-    }
-  };
-
-  const handleDelete = (i) => {
-    if (window.confirm('Eliminar este habito?')) {
-      deleteBadHabit(i);
-    }
+    setHabitName(''); setPenalty(100); setAffectedSkill('mentalidad'); setShowModal(false);
   };
 
   const totalCleanDays = badHabits.reduce((s, h) => s + h.cleanDays, 0);
@@ -196,129 +130,93 @@ function Battle() {
 
   return (
     <div>
-      {/* Summary Stats */}
       {badHabits.length > 0 && (
-        <div className="grid-stats" style={{ marginBottom: 22, gridTemplateColumns: 'repeat(3, 1fr)' }}>
+        <div className="grid-stats" style={{ marginBottom: 20, gridTemplateColumns: 'repeat(3, 1fr)' }}>
           <div className="stat-card">
-            <div className="stat-value" style={{ color: 'var(--green)' }}>{badHabits.length}</div>
+            <div className="stat-value" style={{ color: 'var(--success)' }}>{badHabits.length}</div>
             <div className="stat-label">Habitos</div>
           </div>
           <div className="stat-card">
-            <div className="stat-value" style={{ color: 'var(--green)' }}>{totalCleanDays}</div>
+            <div className="stat-value" style={{ color: 'var(--success)' }}>{totalCleanDays}</div>
             <div className="stat-label">Dias limpios</div>
           </div>
           <div className="stat-card">
-            <div className="stat-value" style={{ color: 'var(--gold)' }}>{maxClean}</div>
+            <div className="stat-value" style={{ color: 'var(--coin)' }}>{maxClean}</div>
             <div className="stat-label">Mejor racha</div>
           </div>
         </div>
       )}
 
-      {/* Habits List */}
       {badHabits.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-icon">🛡️</div>
-          <p>No tienes habitos a romper.</p>
-          <p className="sub">Agrega un habito para empezar tu batalla.</p>
+          <div className="empty-icon">--</div>
+          <p>No tienes habitos a romper</p>
+          <p className="sub">Agrega un habito para empezar tu batalla</p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 20 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
           {badHabits.map((habit, i) => (
-            <div
-              key={habit.createdAt || i}
-              className={`habit-card ${habit.cleanDays >= 7 ? 'clean' : ''}`}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                <div style={{ fontWeight: 700, fontSize: '1.05rem' }}>
-                  🚫 {habit.name}
-                </div>
+            <div key={habit.createdAt || i} className={`habit-card ${habit.cleanDays >= 7 ? 'clean' : ''}`}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <div style={{ fontWeight: 600, fontSize: '0.95rem' }}>{habit.name}</div>
                 <div style={{
-                  background: habit.cleanDays >= 7 ? 'var(--green)' : 'var(--accent)',
-                  color: '#000',
-                  padding: '5px 14px',
-                  borderRadius: 20,
-                  fontWeight: 800,
-                  fontSize: '0.82rem',
+                  background: habit.cleanDays >= 7 ? 'var(--success-muted)' : 'var(--accent-muted)',
+                  color: habit.cleanDays >= 7 ? 'var(--success)' : 'var(--accent)',
+                  padding: '4px 12px', borderRadius: 4, fontWeight: 700, fontSize: '0.8rem',
                 }}>
                   {habit.cleanDays} dias
                 </div>
               </div>
-
-              <div style={{
-                fontSize: '0.82rem', color: 'var(--text-secondary)',
-                marginBottom: 14, display: 'flex', justifyContent: 'space-between',
-              }}>
-                <span>Afecta: {skills[habit.affectedSkill]?.icon} {skills[habit.affectedSkill]?.name}</span>
-                <span style={{ color: '#ef4444' }}>-{habit.penalty} XP</span>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', marginBottom: 12, display: 'flex', justifyContent: 'space-between' }}>
+                <span>Afecta: {skills[habit.affectedSkill]?.name}</span>
+                <span style={{ color: 'var(--danger)' }}>-{habit.penalty} XP</span>
               </div>
-
               {habit.cleanDays > 0 && (
-                <div className="progress-bar" style={{ height: 10, marginBottom: 14 }}>
-                  <div
-                    className="progress-fill"
-                    style={{
-                      width: `${Math.min((habit.cleanDays / 30) * 100, 100)}%`,
-                      background: habit.cleanDays >= 7
-                        ? 'linear-gradient(90deg, var(--green), #34d399)'
-                        : 'linear-gradient(90deg, var(--accent), var(--accent-light))',
-                      fontSize: 0,
-                    }}
-                  />
+                <div className="progress-bar" style={{ marginBottom: 12 }}>
+                  <div className="progress-fill" style={{
+                    width: `${Math.min((habit.cleanDays / 30) * 100, 100)}%`,
+                    background: habit.cleanDays >= 7 ? 'var(--success)' : 'var(--accent)',
+                  }} />
                 </div>
               )}
-
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button className="btn-danger" onClick={() => handleRelapse(i)}>
-                  Reportar Recaida
-                </button>
-                <button className="btn-ghost" onClick={() => handleDelete(i)} style={{ fontSize: '0.82rem' }}>
-                  🗑️ Eliminar
-                </button>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button className="btn-danger" onClick={() => {
+                  if (window.confirm(`Reportar recaida? -${habit.penalty} XP`)) reportRelapse(i);
+                }}>Reportar recaida</button>
+                <button className="btn-ghost" onClick={() => {
+                  if (window.confirm('Eliminar?')) deleteBadHabit(i);
+                }}>Eliminar</button>
               </div>
             </div>
           ))}
         </div>
       )}
 
-      <button className="btn-primary" onClick={() => setShowModal(true)}>
-        + Agregar Habito a Romper
-      </button>
+      <button className="btn-primary" onClick={() => setShowModal(true)}>Agregar habito</button>
 
       {showModal && (
         <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
           <div className="modal-content">
-            <h3>Nuevo Habito a Romper</h3>
-
+            <h3>Nuevo habito a romper</h3>
             <div className="form-group">
-              <label className="form-label">Nombre del habito</label>
-              <input
-                className="form-input"
-                value={habitName}
-                onChange={(e) => setHabitName(e.target.value)}
-                placeholder="Ej: Scrolling, Procrastinacion..."
-                autoFocus
-                onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-              />
+              <label className="form-label">Nombre</label>
+              <input className="form-input" value={habitName} onChange={(e) => setHabitName(e.target.value)}
+                placeholder="Ej: Scrolling, Procrastinacion..." autoFocus onKeyDown={(e) => e.key === 'Enter' && handleAdd()} />
             </div>
-
             <div className="form-group">
-              <label className="form-label">Penalizacion (XP a perder si recaes)</label>
+              <label className="form-label">Penalizacion</label>
               <select className="form-input" value={penalty} onChange={(e) => setPenalty(Number(e.target.value))}>
                 <option value={50}>-50 XP (Leve)</option>
                 <option value={100}>-100 XP (Moderada)</option>
                 <option value={200}>-200 XP (Severa)</option>
               </select>
             </div>
-
             <div className="form-group">
-              <label className="form-label">Area mas afectada</label>
+              <label className="form-label">Area afectada</label>
               <select className="form-input" value={affectedSkill} onChange={(e) => setAffectedSkill(e.target.value)}>
-                {SKILL_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
+                {SKILL_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </div>
-
             <div className="btn-row">
               <button className="btn-secondary" onClick={() => setShowModal(false)}>Cancelar</button>
               <button className="btn-primary" onClick={handleAdd}>Agregar</button>
@@ -330,10 +228,6 @@ function Battle() {
   );
 }
 
-// ══════════════════════════════════════════════════════
-// ARSENAL PAGE (combines both)
-// ══════════════════════════════════════════════════════
-
 export default function Arsenal() {
   const [tab, setTab] = useState('pomodoro');
 
@@ -341,20 +235,14 @@ export default function Arsenal() {
     <div>
       <div className="page-header">
         <h1>Arsenal</h1>
-        <p>Herramientas de productividad y disciplina</p>
+        <p>Productividad y disciplina</p>
       </div>
 
       <div className="tab-group">
-        <button
-          className={`tab-btn ${tab === 'pomodoro' ? 'active' : ''}`}
-          onClick={() => setTab('pomodoro')}
-        >
+        <button className={`tab-btn ${tab === 'pomodoro' ? 'active' : ''}`} onClick={() => setTab('pomodoro')}>
           Pomodoro
         </button>
-        <button
-          className={`tab-btn ${tab === 'battle' ? 'active' : ''}`}
-          onClick={() => setTab('battle')}
-        >
+        <button className={`tab-btn ${tab === 'battle' ? 'active' : ''}`} onClick={() => setTab('battle')}>
           Anti-Dopamina
         </button>
       </div>
