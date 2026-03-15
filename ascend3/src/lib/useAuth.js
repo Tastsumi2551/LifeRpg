@@ -18,8 +18,9 @@ export function useAuth() {
     if (initialized.current) return;
     initialized.current = true;
 
-    // Safety timeout: if Firebase doesn't respond in 10s, stop loading
+    // Safety timeout: if Firebase doesn't respond in 10s, stop loading and show error
     const timeout = setTimeout(() => {
+      setError('No se pudo conectar al servidor. Verifica tu conexión a internet y recarga la página.');
       setLoading(false);
     }, 10000);
 
