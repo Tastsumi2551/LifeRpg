@@ -1,54 +1,49 @@
 import { useState } from 'react';
-import { useGameStore, XP_REWARDS } from '../stores/gameStore';
-
-const SKILL_OPTIONS = [
-  { value: 'economico', label: '💰 Económico' },
-  { value: 'salud', label: '❤️ Salud' },
-  { value: 'mentalidad', label: '🧠 Mentalidad' },
-  { value: 'estudios', label: '📚 Estudios' },
-  { value: 'alimentacion', label: '🍎 Alimentación' },
-  { value: 'aprendizaje', label: '🎓 Aprendizaje' },
-  { value: 'carisma', label: '✨ Carisma' },
-];
+import { useGameStore, XP_REWARDS, SKILL_OPTIONS } from '../stores/gameStore';
 
 export default function Missions() {
-  const { missions, skills, completeMission, uncompleteMission, addMission, deleteMission } = useGameStore();
+  const {
+    missions, skills, completeMission, uncompleteMission,
+    addMission, deleteMission,
+  } = useGameStore();
+
   const [showModal, setShowModal] = useState(false);
   const [filter, setFilter] = useState('all');
-  const [notification, setNotification] = useState(null);
+  const [notif, setNotif] = useState(null);
 
-  // Form state
+  // Form
   const [title, setTitle] = useState('');
   const [skill, setSkill] = useState('economico');
   const [difficulty, setDifficulty] = useState('medium');
   const [isDaily, setIsDaily] = useState(false);
 
-  const filteredMissions = missions.filter((m) => {
+  const filtered = missions.filter((m) => {
     if (filter === 'daily') return m.isDaily;
     if (filter === 'normal') return !m.isDaily;
+    if (filter === 'pending') return !m.completed;
     return true;
   });
 
-  const showNotif = (msg) => {
-    setNotification(msg);
-    setTimeout(() => setNotification(null), 3000);
+  const notify = (msg) => {
+    setNotif(msg);
+    setTimeout(() => setNotif(null), 3000);
   };
 
-  const handleToggle = (index) => {
-    const realIndex = missions.indexOf(filteredMissions[index]);
-    const mission = missions[realIndex];
+  const handleToggle = (filteredIdx) => {
+    const mission = filtered[filteredIdx];
+    const realIdx = missions.indexOf(mission);
     if (!mission.completed) {
-      completeMission(realIndex);
-      showNotif(`✅ ¡Misión completada! +${mission.xpReward} XP`);
+      completeMission(realIdx);
+      notify(`✅ +${mission.xpReward} XP en ${skills[mission.skill]?.icon} ${skills[mission.skill]?.name}`);
     } else {
-      uncompleteMission(realIndex);
+      uncompleteMission(realIdx);
     }
   };
 
   const handleAdd = () => {
     if (!title.trim()) return;
     addMission({ title: title.trim(), skill, difficulty, isDaily });
-    showNotif(isDaily ? '⭐ ¡Nueva misión diaria creada!' : '✨ ¡Nueva misión creada!');
+    notify(isDaily ? '⭐ Misión diaria creada' : '✨ Misión creada');
     setTitle('');
     setSkill('economico');
     setDifficulty('medium');
@@ -56,88 +51,83 @@ export default function Missions() {
     setShowModal(false);
   };
 
-  const handleDelete = (index) => {
-    const realIndex = missions.indexOf(filteredMissions[index]);
-    if (confirm('¿Seguro que quieres eliminar esta misión?')) {
-      deleteMission(realIndex);
+  const handleDelete = (filteredIdx) => {
+    const mission = filtered[filteredIdx];
+    const realIdx = missions.indexOf(mission);
+    if (window.confirm('¿Eliminar esta misión?')) {
+      deleteMission(realIdx);
     }
   };
 
+  const diffLabel = { easy: 'Fácil', medium: 'Media', hard: 'Difícil' };
+
   return (
     <div>
-      <h2 className="section-title">📋 Misiones</h2>
+      <div className="page-header">
+        <h1>🎯 Misiones</h1>
+        <p>Completa misiones para ganar XP en tus habilidades</p>
+      </div>
 
-      {/* Filter Tabs */}
+      {/* Filters */}
       <div className="tab-group">
         {[
           { key: 'all', label: 'Todas' },
+          { key: 'pending', label: 'Pendientes' },
           { key: 'daily', label: 'Diarias' },
           { key: 'normal', label: 'Normales' },
-        ].map((tab) => (
+        ].map((t) => (
           <button
-            key={tab.key}
-            className={`tab-btn ${filter === tab.key ? 'active' : ''}`}
-            onClick={() => setFilter(tab.key)}
+            key={t.key}
+            className={`tab-btn ${filter === t.key ? 'active' : ''}`}
+            onClick={() => setFilter(t.key)}
           >
-            {tab.label}
+            {t.label}
           </button>
         ))}
       </div>
 
       {/* Mission List */}
-      {filteredMissions.length === 0 ? (
+      {filtered.length === 0 ? (
         <div className="empty-state">
-          <div className="icon">🎯</div>
-          <p>No tienes misiones en esta categoría.</p>
-          <p style={{ fontSize: '0.85rem', marginTop: 8 }}>Agrega una misión para empezar a ganar XP.</p>
+          <div className="empty-icon">🎯</div>
+          <p>No hay misiones aquí.</p>
+          <p className="sub">Crea una misión para empezar a ganar XP.</p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
-          {filteredMissions.map((mission, i) => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 18 }}>
+          {filtered.map((mission, i) => (
             <div
               key={mission.createdAt || i}
-              className="card"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 14,
-                opacity: mission.completed ? 0.5 : 1,
-                textDecoration: mission.completed ? 'line-through' : 'none',
-                borderLeft: `4px solid ${skills[mission.skill]?.color || 'var(--accent)'}`,
-                padding: '14px 18px',
-              }}
+              className={`mission-item ${mission.completed ? 'completed' : ''}`}
+              style={{ borderLeft: `3px solid ${skills[mission.skill]?.color || 'var(--accent)'}` }}
             >
               <input
                 type="checkbox"
                 className="custom-checkbox"
-                checked={mission.completed}
+                checked={mission.completed || false}
                 onChange={() => handleToggle(i)}
               />
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 600, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {mission.title}
-                  {mission.isDaily && <span className="badge badge-daily">DIARIA</span>}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="mission-title" style={{
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                  marginBottom: 3,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  flexWrap: 'wrap',
+                }}>
+                  <span>{mission.title}</span>
+                  {mission.isDaily && <span className="badge badge-daily">Diaria</span>}
                 </div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--accent)' }}>
-                  +{mission.xpReward} XP en {skills[mission.skill]?.icon} {skills[mission.skill]?.name}
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                  +{mission.xpReward} XP · {skills[mission.skill]?.icon} {skills[mission.skill]?.name}
                 </div>
               </div>
               <span className={`badge badge-${mission.difficulty}`}>
-                {mission.difficulty === 'easy' ? 'Fácil' : mission.difficulty === 'medium' ? 'Media' : 'Difícil'}
+                {diffLabel[mission.difficulty]}
               </span>
-              <button
-                onClick={() => handleDelete(i)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  fontSize: '1rem',
-                  opacity: 0.5,
-                  transition: 'opacity 0.2s',
-                }}
-                onMouseEnter={(e) => e.target.style.opacity = 1}
-                onMouseLeave={(e) => e.target.style.opacity = 0.5}
-              >
+              <button className="btn-ghost" onClick={() => handleDelete(i)} title="Eliminar">
                 🗑️
               </button>
             </div>
@@ -150,34 +140,34 @@ export default function Missions() {
         + Agregar Misión
       </button>
 
-      {/* Add Mission Modal */}
+      {/* Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
           <div className="modal-content">
             <h3>➕ Nueva Misión</h3>
 
-            <div style={{ marginBottom: 14 }}>
-              <label className="form-label">Título de la Misión</label>
+            <div className="form-group">
+              <label className="form-label">Título de la misión</label>
               <input
-                type="text"
                 className="form-input"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Ej: Hacer ejercicio 30 minutos"
+                placeholder="Ej: Hacer ejercicio 30 min"
                 autoFocus
+                onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
               />
             </div>
 
-            <div style={{ marginBottom: 14 }}>
-              <label className="form-label">Área</label>
+            <div className="form-group">
+              <label className="form-label">Área / Habilidad</label>
               <select className="form-input" value={skill} onChange={(e) => setSkill(e.target.value)}>
-                {SKILL_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                {SKILL_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
                 ))}
               </select>
             </div>
 
-            <div style={{ marginBottom: 14 }}>
+            <div className="form-group">
               <label className="form-label">Dificultad</label>
               <select className="form-input" value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
                 <option value="easy">Fácil (+{XP_REWARDS.easy} XP)</option>
@@ -186,33 +176,31 @@ export default function Missions() {
               </select>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 22 }}>
               <input
                 type="checkbox"
                 className="custom-checkbox"
                 checked={isDaily}
                 onChange={(e) => setIsDaily(e.target.checked)}
-                id="isDailyCheck"
+                id="dailyCheck"
               />
-              <label htmlFor="isDailyCheck" style={{ cursor: 'pointer', color: 'var(--gold)', fontWeight: 600 }}>
-                ⭐ Misión Diaria (se reinicia cada día)
+              <label
+                htmlFor="dailyCheck"
+                style={{ cursor: 'pointer', color: 'var(--gold)', fontWeight: 600, fontSize: '0.88rem' }}
+              >
+                ⭐ Misión diaria (se reinicia cada día)
               </label>
             </div>
 
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button className="btn-secondary" onClick={() => setShowModal(false)} style={{ flex: 1 }}>
-                Cancelar
-              </button>
-              <button className="btn-primary" onClick={handleAdd} style={{ flex: 1 }}>
-                Crear Misión
-              </button>
+            <div className="btn-row">
+              <button className="btn-secondary" onClick={() => setShowModal(false)}>Cancelar</button>
+              <button className="btn-primary" onClick={handleAdd}>Crear Misión</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Notification */}
-      {notification && <div className="notification">{notification}</div>}
+      {notif && <div className="notification">{notif}</div>}
     </div>
   );
 }

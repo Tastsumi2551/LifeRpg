@@ -1,29 +1,30 @@
 import { useGameStore } from '../stores/gameStore';
+import { useNavigate } from 'react-router-dom';
 
 export default function Home() {
-  const { skills, totalXP, missionsCompleted, streak, getPlayerLevel, missions } = useGameStore();
-  const playerLevel = getPlayerLevel();
+  const navigate = useNavigate();
+  const {
+    skills, totalXP, missionsCompleted, streak,
+    getPlayerLevel, missions, badHabits,
+  } = useGameStore();
 
-  const todayMissions = missions.filter((m) => !m.completed);
-  const completedToday = missions.filter((m) => m.completed);
+  const playerLevel = getPlayerLevel();
+  const pendingMissions = missions.filter((m) => !m.completed).length;
+  const completedMissions = missions.filter((m) => m.completed).length;
 
   return (
     <div>
-      {/* Header Stats */}
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--accent)', marginBottom: 4 }}>
-          ⚔️ LIFE RPG v2.0
-        </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-          Tu progreso de hoy
-        </p>
+      {/* Page Header */}
+      <div className="page-header">
+        <h1>⚔️ Dashboard</h1>
+        <p>Tu progreso de hoy</p>
       </div>
 
       {/* Stat Cards */}
       <div className="grid-stats" style={{ marginBottom: 24 }}>
         <div className="stat-card">
           <div className="stat-value">{playerLevel}</div>
-          <div className="stat-label">Nivel General</div>
+          <div className="stat-label">Nivel</div>
         </div>
         <div className="stat-card">
           <div className="stat-value">{totalXP.toLocaleString()}</div>
@@ -34,32 +35,33 @@ export default function Home() {
           <div className="stat-label">Misiones</div>
         </div>
         <div className="stat-card">
-          <div className="stat-value">{streak} 🔥</div>
+          <div className="stat-value">{streak}🔥</div>
           <div className="stat-label">Racha</div>
         </div>
       </div>
 
-      {/* Skills Grid */}
-      <h2 className="section-title">🎯 Tus Habilidades</h2>
-      <div className="grid-skills" style={{ marginBottom: 24 }}>
+      {/* Skills */}
+      <div className="section-title"><span className="icon">🎯</span> Tus Habilidades</div>
+      <div className="grid-skills" style={{ marginBottom: 28 }}>
         {Object.entries(skills).map(([key, skill]) => {
-          const xpForNext = skill.level * 100;
-          const progress = Math.min((skill.xp / xpForNext) * 100, 100);
+          const xpNeeded = skill.level * 100;
+          const pct = Math.min((skill.xp / xpNeeded) * 100, 100);
 
           return (
-            <div key={key} className="card" style={{ transition: 'border-color 0.2s' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <span style={{ fontSize: '1.1rem', fontWeight: 700 }}>
+            <div key={key} className="card">
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 10,
+              }}>
+                <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>
                   {skill.icon} {skill.name}
                 </span>
-                <span style={{
-                  background: skill.color,
-                  padding: '4px 12px',
-                  borderRadius: 16,
-                  fontWeight: 700,
-                  fontSize: '0.8rem',
-                  color: '#000',
-                }}>
+                <span
+                  className="level-badge"
+                  style={{ background: skill.color }}
+                >
                   Nv. {skill.level}
                 </span>
               </div>
@@ -67,35 +69,62 @@ export default function Home() {
                 <div
                   className="progress-fill"
                   style={{
-                    width: `${Math.max(progress, 8)}%`,
-                    background: `linear-gradient(90deg, ${skill.color}, ${skill.color}dd)`,
+                    width: `${Math.max(pct, 6)}%`,
+                    background: `linear-gradient(90deg, ${skill.color}, ${skill.color}cc)`,
                   }}
                 >
-                  {Math.round(progress)}%
+                  {Math.round(pct)}%
                 </div>
               </div>
-              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', marginTop: 6 }}>
-                {skill.xp} / {xpForNext} XP
+              <div style={{
+                fontSize: '0.73rem',
+                color: 'var(--text-dim)',
+                textAlign: 'center',
+                marginTop: 5,
+              }}>
+                {skill.xp} / {xpNeeded} XP
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Quick Mission Summary */}
-      <h2 className="section-title">📋 Resumen de Misiones</h2>
+      {/* Quick Actions */}
+      <div className="section-title"><span className="icon">⚡</span> Acceso Rápido</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10, marginBottom: 28 }}>
+        {[
+          { icon: '🎯', label: 'Misiones', sub: `${pendingMissions} pendientes`, path: '/missions' },
+          { icon: '📅', label: 'Horario', sub: 'Ver semana', path: '/schedule' },
+          { icon: '🛡️', label: 'Batalla', sub: `${badHabits.length} hábitos`, path: '/battle' },
+          { icon: '💰', label: 'Finanzas', sub: 'Tracker', path: '/finance' },
+        ].map((item) => (
+          <div
+            key={item.path}
+            className="card card-interactive"
+            onClick={() => navigate(item.path)}
+            style={{ textAlign: 'center', padding: 16, cursor: 'pointer' }}
+          >
+            <div style={{ fontSize: '1.6rem', marginBottom: 6 }}>{item.icon}</div>
+            <div style={{ fontWeight: 700, fontSize: '0.85rem', marginBottom: 2 }}>{item.label}</div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{item.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Mission Summary */}
+      <div className="section-title"><span className="icon">📋</span> Resumen de Misiones</div>
       <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-          <span style={{ color: 'var(--text-secondary)' }}>Pendientes</span>
-          <span style={{ fontWeight: 700, color: 'var(--accent)' }}>{todayMissions.length}</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+          <span style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>Pendientes</span>
+          <span style={{ fontWeight: 700, color: 'var(--accent)', fontSize: '0.88rem' }}>{pendingMissions}</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12 }}>
-          <span style={{ color: 'var(--text-secondary)' }}>Completadas</span>
-          <span style={{ fontWeight: 700, color: 'var(--green)' }}>{completedToday.length}</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+          <span style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>Completadas hoy</span>
+          <span style={{ fontWeight: 700, color: 'var(--green)', fontSize: '0.88rem' }}>{completedMissions}</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <span style={{ color: 'var(--text-secondary)' }}>Total</span>
-          <span style={{ fontWeight: 700 }}>{missions.length}</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0' }}>
+          <span style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>Total</span>
+          <span style={{ fontWeight: 700, fontSize: '0.88rem' }}>{missions.length}</span>
         </div>
       </div>
     </div>
