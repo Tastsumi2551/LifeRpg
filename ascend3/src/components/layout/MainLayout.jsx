@@ -7,7 +7,7 @@ const NAV = [
   { path: '/', icon: '🏠', label: 'Inicio' },
   { path: '/missions', icon: '🎯', label: 'Misiones' },
   { path: '/schedule', icon: '📅', label: 'Horario' },
-  { path: '/battle', icon: '🛡️', label: 'Batalla' },
+  { path: '/arsenal', icon: '⚔️', label: 'Arsenal' },
   { path: '/finance', icon: '💰', label: 'Finanzas' },
   { path: '/profile', icon: '👤', label: 'Perfil' },
 ];
@@ -16,7 +16,10 @@ export default function MainLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { loaded, loadFromFirebase, getPlayerLevel, displayName, avatar } = useGameStore();
+  const {
+    loaded, loadFromFirebase, getPlayerLevel,
+    displayName, avatar, coins, notifications,
+  } = useGameStore();
 
   useEffect(() => {
     if (user && !loaded) {
@@ -66,17 +69,25 @@ export default function MainLayout() {
             </div>
           </div>
         </div>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          background: 'var(--bg-primary)',
-          padding: '5px 12px',
-          borderRadius: 20,
-          border: '1px solid var(--border)',
-        }}>
-          <span style={{ fontSize: '1rem' }}>{avatar}</span>
-          <span style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--accent)' }}>Nv. {level}</span>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {/* Coins */}
+          <div className="coin-display">
+            <span>🪙</span> {coins}
+          </div>
+          {/* Level */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            background: 'var(--bg-primary)',
+            padding: '5px 12px',
+            borderRadius: 20,
+            border: '1px solid var(--border)',
+          }}>
+            <span style={{ fontSize: '1rem' }}>{avatar}</span>
+            <span style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--accent)' }}>Nv. {level}</span>
+          </div>
         </div>
       </header>
 
@@ -143,6 +154,17 @@ export default function MainLayout() {
           );
         })}
       </nav>
+
+      {/* ── Notifications ── */}
+      {notifications.length > 0 && (
+        <div className="notification-stack">
+          {notifications.map((n) => (
+            <div key={n.id} className="notification level-up">
+              {n.msg}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

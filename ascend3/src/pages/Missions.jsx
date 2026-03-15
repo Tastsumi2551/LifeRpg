@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useGameStore, XP_REWARDS, SKILL_OPTIONS } from '../stores/gameStore';
+import { useGameStore, XP_REWARDS, COIN_REWARDS, SKILL_OPTIONS } from '../stores/gameStore';
 
 export default function Missions() {
   const {
@@ -9,7 +9,6 @@ export default function Missions() {
 
   const [showModal, setShowModal] = useState(false);
   const [filter, setFilter] = useState('all');
-  const [notif, setNotif] = useState(null);
 
   // Form
   const [title, setTitle] = useState('');
@@ -24,17 +23,11 @@ export default function Missions() {
     return true;
   });
 
-  const notify = (msg) => {
-    setNotif(msg);
-    setTimeout(() => setNotif(null), 3000);
-  };
-
   const handleToggle = (filteredIdx) => {
     const mission = filtered[filteredIdx];
     const realIdx = missions.indexOf(mission);
     if (!mission.completed) {
       completeMission(realIdx);
-      notify(`✅ +${mission.xpReward} XP en ${skills[mission.skill]?.icon} ${skills[mission.skill]?.name}`);
     } else {
       uncompleteMission(realIdx);
     }
@@ -43,7 +36,6 @@ export default function Missions() {
   const handleAdd = () => {
     if (!title.trim()) return;
     addMission({ title: title.trim(), skill, difficulty, isDaily });
-    notify(isDaily ? '⭐ Misión diaria creada' : '✨ Misión creada');
     setTitle('');
     setSkill('economico');
     setDifficulty('medium');
@@ -54,18 +46,18 @@ export default function Missions() {
   const handleDelete = (filteredIdx) => {
     const mission = filtered[filteredIdx];
     const realIdx = missions.indexOf(mission);
-    if (window.confirm('¿Eliminar esta misión?')) {
+    if (window.confirm('Eliminar esta mision?')) {
       deleteMission(realIdx);
     }
   };
 
-  const diffLabel = { easy: 'Fácil', medium: 'Media', hard: 'Difícil' };
+  const diffLabel = { easy: 'Facil', medium: 'Media', hard: 'Dificil' };
 
   return (
     <div>
       <div className="page-header">
-        <h1>🎯 Misiones</h1>
-        <p>Completa misiones para ganar XP en tus habilidades</p>
+        <h1>Misiones</h1>
+        <p>Completa misiones para ganar XP y monedas</p>
       </div>
 
       {/* Filters */}
@@ -90,8 +82,8 @@ export default function Missions() {
       {filtered.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">🎯</div>
-          <p>No hay misiones aquí.</p>
-          <p className="sub">Crea una misión para empezar a ganar XP.</p>
+          <p>No hay misiones aqui.</p>
+          <p className="sub">Crea una mision para empezar a ganar XP.</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 18 }}>
@@ -109,19 +101,14 @@ export default function Missions() {
               />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="mission-title" style={{
-                  fontWeight: 600,
-                  fontSize: '0.9rem',
-                  marginBottom: 3,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 8,
-                  flexWrap: 'wrap',
+                  fontWeight: 600, fontSize: '0.9rem', marginBottom: 3,
+                  display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
                 }}>
                   <span>{mission.title}</span>
                   {mission.isDaily && <span className="badge badge-daily">Diaria</span>}
                 </div>
                 <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                  +{mission.xpReward} XP · {skills[mission.skill]?.icon} {skills[mission.skill]?.name}
+                  +{mission.xpReward} XP · +{COIN_REWARDS[mission.difficulty] || 5} 🪙 · {skills[mission.skill]?.icon} {skills[mission.skill]?.name}
                 </div>
               </div>
               <span className={`badge badge-${mission.difficulty}`}>
@@ -137,17 +124,17 @@ export default function Missions() {
 
       {/* Add Button */}
       <button className="btn-primary" onClick={() => setShowModal(true)}>
-        + Agregar Misión
+        + Agregar Mision
       </button>
 
       {/* Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
           <div className="modal-content">
-            <h3>➕ Nueva Misión</h3>
+            <h3>Nueva Mision</h3>
 
             <div className="form-group">
-              <label className="form-label">Título de la misión</label>
+              <label className="form-label">Titulo de la mision</label>
               <input
                 className="form-input"
                 value={title}
@@ -159,7 +146,7 @@ export default function Missions() {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Área / Habilidad</label>
+              <label className="form-label">Area / Habilidad</label>
               <select className="form-input" value={skill} onChange={(e) => setSkill(e.target.value)}>
                 {SKILL_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
@@ -170,9 +157,9 @@ export default function Missions() {
             <div className="form-group">
               <label className="form-label">Dificultad</label>
               <select className="form-input" value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
-                <option value="easy">Fácil (+{XP_REWARDS.easy} XP)</option>
-                <option value="medium">Media (+{XP_REWARDS.medium} XP)</option>
-                <option value="hard">Difícil (+{XP_REWARDS.hard} XP)</option>
+                <option value="easy">Facil (+{XP_REWARDS.easy} XP · +{COIN_REWARDS.easy} 🪙)</option>
+                <option value="medium">Media (+{XP_REWARDS.medium} XP · +{COIN_REWARDS.medium} 🪙)</option>
+                <option value="hard">Dificil (+{XP_REWARDS.hard} XP · +{COIN_REWARDS.hard} 🪙)</option>
               </select>
             </div>
 
@@ -188,19 +175,17 @@ export default function Missions() {
                 htmlFor="dailyCheck"
                 style={{ cursor: 'pointer', color: 'var(--gold)', fontWeight: 600, fontSize: '0.88rem' }}
               >
-                ⭐ Misión diaria (se reinicia cada día)
+                Mision diaria (se reinicia cada dia)
               </label>
             </div>
 
             <div className="btn-row">
               <button className="btn-secondary" onClick={() => setShowModal(false)}>Cancelar</button>
-              <button className="btn-primary" onClick={handleAdd}>Crear Misión</button>
+              <button className="btn-primary" onClick={handleAdd}>Crear Mision</button>
             </div>
           </div>
         </div>
       )}
-
-      {notif && <div className="notification">{notif}</div>}
     </div>
   );
 }

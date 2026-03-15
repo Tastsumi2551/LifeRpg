@@ -6,7 +6,7 @@ import MainLayout from './components/layout/MainLayout';
 import Home from './pages/Home';
 import Missions from './pages/Missions';
 import Schedule from './pages/Schedule';
-import Battle from './pages/Battle';
+import Arsenal from './pages/Arsenal';
 import Finance from './pages/Finance';
 import Profile from './pages/Profile';
 
@@ -45,7 +45,7 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/missions" element={<Missions />} />
           <Route path="/schedule" element={<Schedule />} />
-          <Route path="/battle" element={<Battle />} />
+          <Route path="/arsenal" element={<Arsenal />} />
           <Route path="/finance" element={<Finance />} />
           <Route path="/profile" element={<Profile />} />
         </Route>
