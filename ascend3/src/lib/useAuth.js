@@ -6,38 +6,25 @@ import {
   createUserWithEmailAndPassword,
   signOut,
 } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import { auth, db, googleProvider } from './firebase';
+import { auth, googleProvider } from './firebase';
 import { useAuthStore } from '../stores/authStore';
 
 export function useAuth() {
   const initialized = useRef(false);
-  const { setUser, setLoading, setOnboardingComplete, setError } = useAuthStore();
+  const { setUser, setLoading, setError } = useAuthStore();
 
   useEffect(() => {
     if (initialized.current) return;
     initialized.current = true;
 
-    // Safety timeout: if Firebase doesn't respond in 10s, stop loading and show error
     const timeout = setTimeout(() => {
       setError('No se pudo conectar al servidor. Verifica tu conexión a internet y recarga la página.');
       setLoading(false);
     }, 10000);
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       clearTimeout(timeout);
-      if (user) {
-        setUser(user);
-        try {
-          const profileDoc = await getDoc(doc(db, 'users', user.uid, 'profile', 'data'));
-          setOnboardingComplete(profileDoc.exists() && profileDoc.data()?.onboardingComplete === true);
-        } catch {
-          setOnboardingComplete(false);
-        }
-      } else {
-        setUser(null);
-        setOnboardingComplete(false);
-      }
+      setUser(user || null);
       setLoading(false);
     });
 
@@ -45,7 +32,7 @@ export function useAuth() {
       clearTimeout(timeout);
       unsubscribe();
     };
-  }, [setUser, setLoading, setOnboardingComplete, setError]);
+  }, [setUser, setLoading, setError]);
 
   const loginWithGoogle = async () => {
     try {

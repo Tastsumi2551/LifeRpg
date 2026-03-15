@@ -1,351 +1,218 @@
-import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useGameStore } from '../stores/gameStore';
-import { useAuthStore } from '../stores/authStore';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
-import { format } from 'date-fns';
-import MissionCard from '../components/features/MissionCard';
-import { HiPlus, HiPencil } from 'react-icons/hi2';
+import { useState } from 'react';
+import { useGameStore, XP_REWARDS } from '../stores/gameStore';
 
-const missionTemplates = {
-  gym: { name: 'Ir al gym', icon: '🏋️', category: 'gym', xp: 50, difficulty: 'media' },
-  study: { name: 'Sesión de estudio completa', icon: '📚', category: 'estudio', xp: 40, difficulty: 'media' },
-  water: { name: 'Completar meta de agua', icon: '💧', category: 'hidratación', xp: 15, difficulty: 'fácil' },
-  nutrition: { name: 'Comer dentro de macros', icon: '🍽️', category: 'nutrición', xp: 25, difficulty: 'media' },
-  pomodoro: { name: 'Completar un pomodoro', icon: '⏱️', category: 'personal', xp: 20, difficulty: 'fácil' },
-  walk: { name: 'Caminar 30 minutos', icon: '🚶', category: 'personal', xp: 20, difficulty: 'fácil' },
-  read: { name: 'Leer 20 páginas', icon: '📖', category: 'personal', xp: 25, difficulty: 'media' },
-  meditate: { name: 'Meditar 10 minutos', icon: '🧘', category: 'personal', xp: 15, difficulty: 'fácil' },
-  save: { name: 'Ahorrar hoy', icon: '💰', category: 'finanzas', xp: 20, difficulty: 'fácil' },
-  sleep: { name: 'Dormir a tiempo', icon: '😴', category: 'personal', xp: 30, difficulty: 'media' },
-  work: { name: 'Sesión productiva de trabajo', icon: '💼', category: 'trabajo', xp: 35, difficulty: 'media' },
-};
+const SKILL_OPTIONS = [
+  { value: 'economico', label: '💰 Económico' },
+  { value: 'salud', label: '❤️ Salud' },
+  { value: 'mentalidad', label: '🧠 Mentalidad' },
+  { value: 'estudios', label: '📚 Estudios' },
+  { value: 'alimentacion', label: '🍎 Alimentación' },
+  { value: 'aprendizaje', label: '🎓 Aprendizaje' },
+  { value: 'carisma', label: '✨ Carisma' },
+];
 
 export default function Missions() {
-  const { user } = useAuthStore();
-  const { missions, setMissions, schedule, settings, addXP, addCoins } = useGameStore();
-  const [showCreate, setShowCreate] = useState(false);
-  const [showCompleted, setShowCompleted] = useState(false);
-  const [newMission, setNewMission] = useState({ name: '', description: '', xp: 25, category: 'personal', recurrence: 'diaria' });
-  const [showScheduleEditor, setShowScheduleEditor] = useState(false);
+  const { missions, skills, completeMission, uncompleteMission, addMission, deleteMission } = useGameStore();
+  const [showModal, setShowModal] = useState(false);
+  const [filter, setFilter] = useState('all');
+  const [notification, setNotification] = useState(null);
 
-  const today = format(new Date(), 'yyyy-MM-dd');
-  const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-  const todayName = dayNames[new Date().getDay()];
-  const todaySchedule = schedule?.[todayName];
+  // Form state
+  const [title, setTitle] = useState('');
+  const [skill, setSkill] = useState('economico');
+  const [difficulty, setDifficulty] = useState('medium');
+  const [isDaily, setIsDaily] = useState(false);
 
-  const generateMissions = useCallback(async () => {
-    if (!user) return;
-    const missionDocRef = doc(db, 'users', user.uid, 'missions', today);
-    const existing = await getDoc(missionDocRef);
+  const filteredMissions = missions.filter((m) => {
+    if (filter === 'daily') return m.isDaily;
+    if (filter === 'normal') return !m.isDaily;
+    return true;
+  });
 
-    if (existing.exists() && existing.data().missions?.length > 0) {
-      setMissions(existing.data().missions);
-      return;
-    }
+  const showNotif = (msg) => {
+    setNotification(msg);
+    setTimeout(() => setNotification(null), 3000);
+  };
 
-    const generated = [];
-    const activeMissions = settings?.activeMissions || [];
-    const todayBlocks = todaySchedule?.blocks || [];
-    const isActiveDay = todaySchedule?.active !== false;
-
-    if (isActiveDay) {
-      const hasGymBlock = todayBlocks.some((b) => b.category === 'gym');
-      if (hasGymBlock && activeMissions.includes('gym')) {
-        const gymBlock = todayBlocks.find((b) => b.category === 'gym');
-        generated.push({
-          ...missionTemplates.gym,
-          id: `auto-gym-${today}`,
-          suggestedTime: gymBlock?.start,
-          completed: false,
-          auto: true,
-        });
-      }
-
-      const hasStudyBlock = todayBlocks.some((b) => b.category === 'estudio');
-      if (hasStudyBlock && activeMissions.includes('study')) {
-        const studyBlock = todayBlocks.find((b) => b.category === 'estudio');
-        generated.push({
-          ...missionTemplates.study,
-          id: `auto-study-${today}`,
-          suggestedTime: studyBlock?.start,
-          completed: false,
-          auto: true,
-        });
-      }
-
-      const hasWorkBlock = todayBlocks.some((b) => b.category === 'trabajo');
-      if (hasWorkBlock) {
-        const workBlock = todayBlocks.find((b) => b.category === 'trabajo');
-        generated.push({
-          ...missionTemplates.work,
-          id: `auto-work-${today}`,
-          suggestedTime: workBlock?.start,
-          completed: false,
-          auto: true,
-        });
-      }
-    }
-
-    ['water', 'nutrition', 'pomodoro', 'walk', 'read', 'meditate', 'save', 'sleep'].forEach((id) => {
-      if (activeMissions.includes(id)) {
-        const template = missionTemplates[id];
-        if (id === 'sleep') {
-          template.name = `Dormir antes de las ${todaySchedule?.sleep || '23:00'}`;
-        }
-        if (id === 'water') {
-          template.name = `Tomar ${settings?.healthGoals?.waterGoal || 8} vasos de agua`;
-        }
-        generated.push({
-          ...template,
-          id: `auto-${id}-${today}`,
-          completed: false,
-          auto: true,
-        });
-      }
-    });
-
-    // Custom missions
-    (settings?.customMissions || []).forEach((cm, i) => {
-      generated.push({
-        id: `custom-${i}-${today}`,
-        name: cm.name,
-        icon: '⚡',
-        category: 'personal',
-        xp: cm.xp || 25,
-        difficulty: 'media',
-        completed: false,
-        auto: false,
-        custom: true,
-      });
-    });
-
-    // Fewer missions on rest days
-    if (!isActiveDay) {
-      const relaxMissions = generated.filter(
-        (m) => ['water', 'meditate', 'read', 'walk'].some((id) => m.id.includes(id))
-      );
-      setMissions(relaxMissions.length > 0 ? relaxMissions : generated.slice(0, 3));
+  const handleToggle = (index) => {
+    const realIndex = missions.indexOf(filteredMissions[index]);
+    const mission = missions[realIndex];
+    if (!mission.completed) {
+      completeMission(realIndex);
+      showNotif(`✅ ¡Misión completada! +${mission.xpReward} XP`);
     } else {
-      setMissions(generated);
-    }
-
-    await setDoc(missionDocRef, { missions: generated, date: today, generatedAt: new Date().toISOString() });
-  }, [user, today, todaySchedule, settings, setMissions]);
-
-  useEffect(() => {
-    generateMissions();
-  }, [generateMissions]);
-
-  const completeMission = async (missionId) => {
-    const updated = missions.map((m) =>
-      m.id === missionId ? { ...m, completed: true, completedAt: new Date().toISOString() } : m
-    );
-    setMissions(updated);
-
-    const mission = missions.find((m) => m.id === missionId);
-    if (mission) {
-      addXP(mission.xp);
-      addCoins(Math.floor(mission.xp / 10));
-    }
-
-    // Check if all completed for bonus
-    const allCompleted = updated.every((m) => m.completed);
-    if (allCompleted && updated.length > 0) {
-      addXP(50);
-      addCoins(5);
-    }
-
-    if (user) {
-      await setDoc(doc(db, 'users', user.uid, 'missions', today), {
-        missions: updated,
-        date: today,
-        generatedAt: new Date().toISOString(),
-      });
+      uncompleteMission(realIndex);
     }
   };
 
-  const createMission = async () => {
-    if (!newMission.name.trim()) return;
-    const created = {
-      id: `manual-${Date.now()}`,
-      name: newMission.name,
-      description: newMission.description,
-      icon: '⚡',
-      category: newMission.category,
-      xp: newMission.xp,
-      difficulty: newMission.xp > 50 ? 'difícil' : newMission.xp > 25 ? 'media' : 'fácil',
-      completed: false,
-      auto: false,
-    };
-    const updated = [...missions, created];
-    setMissions(updated);
-    setShowCreate(false);
-    setNewMission({ name: '', description: '', xp: 25, category: 'personal', recurrence: 'diaria' });
-
-    if (user) {
-      await setDoc(doc(db, 'users', user.uid, 'missions', today), { missions: updated, date: today });
-    }
+  const handleAdd = () => {
+    if (!title.trim()) return;
+    addMission({ title: title.trim(), skill, difficulty, isDaily });
+    showNotif(isDaily ? '⭐ ¡Nueva misión diaria creada!' : '✨ ¡Nueva misión creada!');
+    setTitle('');
+    setSkill('economico');
+    setDifficulty('medium');
+    setIsDaily(false);
+    setShowModal(false);
   };
 
-  const activeMissions = missions.filter((m) => !m.completed);
-  const completedMissions = missions.filter((m) => m.completed);
+  const handleDelete = (index) => {
+    const realIndex = missions.indexOf(filteredMissions[index]);
+    if (confirm('¿Seguro que quieres eliminar esta misión?')) {
+      deleteMission(realIndex);
+    }
+  };
 
   return (
-    <div className="p-4 pb-6 flex flex-col gap-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-lg font-bold text-text-primary">Misiones</h1>
-          <p className="text-xs text-text-muted">
-            {completedMissions.length}/{missions.length} completadas
-          </p>
-        </div>
-        <button onClick={() => setShowCreate(true)} className="btn-primary text-xs py-2 px-3 flex items-center gap-1">
-          <HiPlus className="w-3 h-3" /> Nueva
-        </button>
+    <div>
+      <h2 className="section-title">📋 Misiones</h2>
+
+      {/* Filter Tabs */}
+      <div className="tab-group">
+        {[
+          { key: 'all', label: 'Todas' },
+          { key: 'daily', label: 'Diarias' },
+          { key: 'normal', label: 'Normales' },
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            className={`tab-btn ${filter === tab.key ? 'active' : ''}`}
+            onClick={() => setFilter(tab.key)}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
-      {/* Today's Schedule Mini */}
-      {todaySchedule?.active && todaySchedule?.blocks?.length > 0 && (
-        <div className="flex gap-1.5 overflow-x-auto pb-1">
-          {todaySchedule.blocks
-            .sort((a, b) => a.start.localeCompare(b.start))
-            .map((block, i) => (
-              <div key={i} className="flex-shrink-0 bg-bg-surface rounded-lg px-2 py-1 text-[10px]">
-                <span className="text-text-muted">{block.start}</span>
-                <span className="text-text-secondary ml-1">{block.name}</span>
-              </div>
-            ))}
-        </div>
-      )}
-
-      {/* Active Missions */}
-      {activeMissions.length > 0 ? (
-        <div className="flex flex-col gap-2">
-          <h3 className="text-xs text-text-muted font-medium">Misiones del día</h3>
-          {activeMissions.map((mission) => (
-            <MissionCard key={mission.id} mission={mission} onComplete={completeMission} />
-          ))}
+      {/* Mission List */}
+      {filteredMissions.length === 0 ? (
+        <div className="empty-state">
+          <div className="icon">🎯</div>
+          <p>No tienes misiones en esta categoría.</p>
+          <p style={{ fontSize: '0.85rem', marginTop: 8 }}>Agrega una misión para empezar a ganar XP.</p>
         </div>
       ) : (
-        missions.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="glass-card p-6 text-center"
-          >
-            <span className="text-4xl mb-2 block">🎉</span>
-            <p className="text-accent font-medium">¡Todas las misiones completadas!</p>
-            <p className="text-text-muted text-xs mt-1">+50 XP bonus</p>
-          </motion.div>
-        )
-      )}
-
-      {/* Completed */}
-      {completedMissions.length > 0 && (
-        <div>
-          <button
-            onClick={() => setShowCompleted(!showCompleted)}
-            className="text-xs text-text-muted hover:text-text-secondary transition-colors"
-          >
-            {showCompleted ? '▼' : '▶'} Completadas ({completedMissions.length})
-          </button>
-          <AnimatePresence>
-            {showCompleted && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="flex flex-col gap-2 mt-2 overflow-hidden"
-              >
-                {completedMissions.map((mission) => (
-                  <MissionCard key={mission.id} mission={mission} completed />
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      )}
-
-      {/* Empty state */}
-      {missions.length === 0 && (
-        <div className="glass-card p-6 text-center">
-          <span className="text-4xl mb-2 block">⚔️</span>
-          <p className="text-text-secondary text-sm">Aún no tienes misiones</p>
-          <p className="text-text-muted text-xs mt-1">¿Configuraste tu horario?</p>
-        </div>
-      )}
-
-      {/* Create Mission Modal */}
-      <AnimatePresence>
-        {showCreate && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 z-50 flex items-end sm:items-center justify-center p-4"
-            onClick={() => setShowCreate(false)}
-          >
-            <motion.div
-              initial={{ y: 100 }}
-              animate={{ y: 0 }}
-              exit={{ y: 100 }}
-              onClick={(e) => e.stopPropagation()}
-              className="glass-card p-5 w-full max-w-md flex flex-col gap-4"
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
+          {filteredMissions.map((mission, i) => (
+            <div
+              key={mission.createdAt || i}
+              className="card"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 14,
+                opacity: mission.completed ? 0.5 : 1,
+                textDecoration: mission.completed ? 'line-through' : 'none',
+                borderLeft: `4px solid ${skills[mission.skill]?.color || 'var(--accent)'}`,
+                padding: '14px 18px',
+              }}
             >
-              <h3 className="font-display text-lg font-bold">Nueva Misión</h3>
               <input
-                type="text"
-                value={newMission.name}
-                onChange={(e) => setNewMission({ ...newMission, name: e.target.value })}
-                placeholder="Nombre de la misión"
+                type="checkbox"
+                className="custom-checkbox"
+                checked={mission.completed}
+                onChange={() => handleToggle(i)}
               />
-              <input
-                type="text"
-                value={newMission.description}
-                onChange={(e) => setNewMission({ ...newMission, description: e.target.value })}
-                placeholder="Descripción (opcional)"
-              />
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-text-muted mb-1 block">XP (25-100)</label>
-                  <input
-                    type="number"
-                    min="25"
-                    max="100"
-                    value={newMission.xp}
-                    onChange={(e) => setNewMission({ ...newMission, xp: Math.min(100, Math.max(25, parseInt(e.target.value) || 25)) })}
-                  />
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {mission.title}
+                  {mission.isDaily && <span className="badge badge-daily">DIARIA</span>}
                 </div>
-                <div>
-                  <label className="text-xs text-text-muted mb-1 block">Categoría</label>
-                  <select
-                    value={newMission.category}
-                    onChange={(e) => setNewMission({ ...newMission, category: e.target.value })}
-                  >
-                    <option value="personal">🧠 Personal</option>
-                    <option value="estudio">📚 Estudio</option>
-                    <option value="gym">🏋️ Gym</option>
-                    <option value="nutrición">🍽️ Nutrición</option>
-                    <option value="finanzas">💰 Finanzas</option>
-                    <option value="trabajo">💼 Trabajo</option>
-                  </select>
+                <div style={{ fontSize: '0.8rem', color: 'var(--accent)' }}>
+                  +{mission.xpReward} XP en {skills[mission.skill]?.icon} {skills[mission.skill]?.name}
                 </div>
               </div>
-              <div className="flex gap-2">
-                <button onClick={() => setShowCreate(false)} className="flex-1 py-2 rounded-xl text-sm text-text-muted hover:text-text-primary transition-colors">
-                  Cancelar
-                </button>
-                <button onClick={createMission} className="flex-1 btn-primary text-sm py-2">
-                  Crear
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <span className={`badge badge-${mission.difficulty}`}>
+                {mission.difficulty === 'easy' ? 'Fácil' : mission.difficulty === 'medium' ? 'Media' : 'Difícil'}
+              </span>
+              <button
+                onClick={() => handleDelete(i)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  opacity: 0.5,
+                  transition: 'opacity 0.2s',
+                }}
+                onMouseEnter={(e) => e.target.style.opacity = 1}
+                onMouseLeave={(e) => e.target.style.opacity = 0.5}
+              >
+                🗑️
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Add Button */}
+      <button className="btn-primary" onClick={() => setShowModal(true)}>
+        + Agregar Misión
+      </button>
+
+      {/* Add Mission Modal */}
+      {showModal && (
+        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowModal(false)}>
+          <div className="modal-content">
+            <h3>➕ Nueva Misión</h3>
+
+            <div style={{ marginBottom: 14 }}>
+              <label className="form-label">Título de la Misión</label>
+              <input
+                type="text"
+                className="form-input"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Ej: Hacer ejercicio 30 minutos"
+                autoFocus
+              />
+            </div>
+
+            <div style={{ marginBottom: 14 }}>
+              <label className="form-label">Área</label>
+              <select className="form-input" value={skill} onChange={(e) => setSkill(e.target.value)}>
+                {SKILL_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
+            </div>
+
+            <div style={{ marginBottom: 14 }}>
+              <label className="form-label">Dificultad</label>
+              <select className="form-input" value={difficulty} onChange={(e) => setDifficulty(e.target.value)}>
+                <option value="easy">Fácil (+{XP_REWARDS.easy} XP)</option>
+                <option value="medium">Media (+{XP_REWARDS.medium} XP)</option>
+                <option value="hard">Difícil (+{XP_REWARDS.hard} XP)</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 20 }}>
+              <input
+                type="checkbox"
+                className="custom-checkbox"
+                checked={isDaily}
+                onChange={(e) => setIsDaily(e.target.checked)}
+                id="isDailyCheck"
+              />
+              <label htmlFor="isDailyCheck" style={{ cursor: 'pointer', color: 'var(--gold)', fontWeight: 600 }}>
+                ⭐ Misión Diaria (se reinicia cada día)
+              </label>
+            </div>
+
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button className="btn-secondary" onClick={() => setShowModal(false)} style={{ flex: 1 }}>
+                Cancelar
+              </button>
+              <button className="btn-primary" onClick={handleAdd} style={{ flex: 1 }}>
+                Crear Misión
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Notification */}
+      {notification && <div className="notification">{notification}</div>}
     </div>
   );
 }
