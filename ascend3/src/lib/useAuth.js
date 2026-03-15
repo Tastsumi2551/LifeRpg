@@ -18,7 +18,13 @@ export function useAuth() {
     if (initialized.current) return;
     initialized.current = true;
 
+    // Safety timeout: if Firebase doesn't respond in 10s, stop loading
+    const timeout = setTimeout(() => {
+      setLoading(false);
+    }, 10000);
+
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      clearTimeout(timeout);
       if (user) {
         setUser(user);
         try {
@@ -34,7 +40,10 @@ export function useAuth() {
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => {
+      clearTimeout(timeout);
+      unsubscribe();
+    };
   }, [setUser, setLoading, setOnboardingComplete, setError]);
 
   const loginWithGoogle = async () => {
