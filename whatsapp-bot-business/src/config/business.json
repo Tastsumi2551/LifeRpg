@@ -1,0 +1,52 @@
+{
+  "businessName": "Mi Negocio",
+  "welcome": "👋 ¡Hola! Bienvenido a *{businessName}*.\n\n¿En qué puedo ayudarte?\n\n1️⃣ Ver nuestros servicios\n2️⃣ Horarios y ubicación\n3️⃣ Precios\n4️⃣ Agendar cita / hacer pedido\n5️⃣ Hablar con un humano\n\n_Escribe el número de la opción que deseas._",
+  "services": [
+    { "name": "Servicio 1", "description": "Descripción del servicio 1", "price": "$100" },
+    { "name": "Servicio 2", "description": "Descripción del servicio 2", "price": "$200" },
+    { "name": "Servicio 3", "description": "Descripción del servicio 3", "price": "$300" }
+  ],
+  "schedule": {
+    "weekdays": "Lunes a Viernes: 9:00 AM - 6:00 PM",
+    "saturday": "Sábado: 9:00 AM - 2:00 PM",
+    "sunday": "Domingo: Cerrado"
+  },
+  "location": {
+    "address": "Tu dirección aquí",
+    "googleMaps": "https://maps.google.com/?q=tu+ubicacion",
+    "city": "Tu ciudad"
+  },
+  "contact": {
+    "phone": "+1234567890",
+    "email": "contacto@minegocio.com",
+    "instagram": "@minegocio"
+  },
+  "ownerPhone": "+1234567890",
+  "autoReplies": {
+    "outsideHours": "⏰ Estamos fuera de horario. Te responderemos en cuanto abramos.\n\nNuestro horario:\n{schedule}",
+    "humanRequested": "📞 Un momento, te comunicamos con una persona del equipo.\n\n_Mientras tanto, ¿hay algo más en lo que pueda ayudarte?_",
+    "orderReceived": "✅ ¡Pedido recibido!\n\nDetalles:\n{orderDetails}\n\nTe confirmaremos en breve. ¡Gracias por tu preferencia! 🙏",
+    "appointmentReceived": "📅 ¡Solicitud de cita recibida!\n\nFecha deseada: {date}\nServicio: {service}\n\nTe confirmaremos la disponibilidad pronto.",
+    "unknown": "🤔 No entendí tu mensaje. Por favor elige una opción:\n\n1️⃣ Servicios\n2️⃣ Horarios\n3️⃣ Precios\n4️⃣ Agendar/Pedir\n5️⃣ Hablar con humano\n\n_O escribe tu pregunta y te ayudo._",
+    "thanks": "🙏 ¡Gracias por contactarnos! Si necesitas algo más, no dudes en escribirnos.\n\n⭐ ¿Te gustaría dejarnos una reseña? Nos ayudaría mucho."
+  },
+  "faq": [
+    {
+      "keywords": ["envio", "envío", "delivery", "domicilio", "llevan"],
+      "answer": "🚚 ¡Sí hacemos envíos!\n\nZona de cobertura: {city}\nCosto: Desde $50\nTiempo estimado: 30-60 min\n\n¿Deseas hacer un pedido?"
+    },
+    {
+      "keywords": ["pago", "pagar", "efectivo", "tarjeta", "transferencia"],
+      "answer": "💳 Métodos de pago:\n\n• Efectivo\n• Tarjeta de crédito/débito\n• Transferencia bancaria\n\n¿Deseas proceder con tu compra?"
+    },
+    {
+      "keywords": ["descuento", "promocion", "promoción", "oferta"],
+      "answer": "🎉 ¡Pregunta por nuestras promociones vigentes!\n\nEscribe *PROMO* para ver las ofertas actuales."
+    }
+  ],
+  "keywords": {
+    "greetings": ["hola", "buenas", "buenos dias", "buenas tardes", "buenas noches", "hey", "hi", "hello", "que tal", "saludos"],
+    "thanks": ["gracias", "thanks", "thx", "te agradezco", "muchas gracias", "genial", "perfecto", "excelente"],
+    "bye": ["adios", "adiós", "bye", "chao", "hasta luego", "nos vemos"]
+  }
+}
